@@ -1,0 +1,50 @@
+{
+  "name": "state-machine",
+  "version": "1.0.0",
+  "description": "Solidity framework to implement a state machine pattern.",
+  "scripts": {
+    "lint": "eslint .",
+    "coverage": "solidity-coverage",
+    "generate-wallet": "node ./scripts/generateWallet.js",
+    "get-private-key": "node ./scripts/getPrivateKey.js"
+  },
+  "directories": {
+    "test": "test"
+  },
+  "devDependencies": {
+    "babel-eslint": "^8.1.2",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-stage-2": "^6.24.1",
+    "babel-preset-stage-3": "^6.24.1",
+    "babel-register": "^6.26.0",
+    "bluebird": "^3.5.1",
+    "eslint": "^4.14.0",
+    "eslint-config-standard": "^11.0.0-beta.0",
+    "eslint-plugin-babel": "^4.1.2",
+    "eslint-plugin-import": "^2.8.0",
+    "eslint-plugin-node": "^5.2.1",
+    "eslint-plugin-promise": "^3.6.0",
+    "eslint-plugin-standard": "^3.0.1",
+    "ethereumjs-util": "^5.1.3",
+    "ethereumjs-wallet": "^0.6.0",
+    "inquirer": "^5.0.0",
+    "solidity-coverage": "^0.4.7",
+    "web3-provider-engine": "^13.5.0"
+  },
+  "babel": {
+    "presets": [
+      "env"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tokenfoundry/sale-contracts.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tokenfoundry/sale-contracts/issues"
+  },
+  "homepage": "https://github.com/tokenfoundry/sale-contracts#readme"
+}
