@@ -1,7 +1,7 @@
 require('babel-register');
 require('babel-polyfill');
 
-const getPrivateKey = require('./utils/get-private-key');
+const getPrivateKey = require('./scripts/get-private-key');
 
 const HDWalletProvider = require('./utils/truffle-provider');
 
