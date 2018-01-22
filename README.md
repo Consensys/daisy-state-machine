@@ -1,5 +1,9 @@
 # State Machine
 
+## Docs
+
+Please read the [docs](./docs/StateMachine.md) and the [examples](./contracts/examples/) in order to learn how to use this.
+
 ## Instructions
 
 In order to build and test the contracts found in this repo, [Truffle](truffleframework.com) version > 4 is needed.
