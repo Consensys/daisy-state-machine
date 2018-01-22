@@ -11,7 +11,7 @@ contract TimedStateMachine is StateMachine {
     // Stores the start timestamp for each stage (the value is 0 if the stage doesn't have a start timestamp).
     mapping(bytes32 => uint256) internal startTime;
 
-    /// @dev This function overrides the startConditions function in the parent class in order to enable automatic transitions that depend on the timestamp.
+    /// @dev This function overrides the startConditions function in the parent contract in order to enable automatic transitions that depend on the timestamp.
     function startConditions(bytes32 stageId) internal constant returns(bool) {
         // Get the startTime for stage
         uint256 start = startTime[stageId];
