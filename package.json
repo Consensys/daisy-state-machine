@@ -39,12 +39,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tokenfoundry/sale-contracts.git"
+    "url": "git+https://github.com/tokenfoundry/state-machine.git"
   },
   "author": "",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/tokenfoundry/sale-contracts/issues"
+    "url": "https://github.com/tokenfoundry/state-machine/issues"
   },
-  "homepage": "https://github.com/tokenfoundry/sale-contracts#readme"
+  "homepage": "https://github.com/tokenfoundry/state-machine#readme"
 }
