@@ -1,4 +1,4 @@
-import { duration } from './helpers/increaseTime';
+import increaseTime, { duration } from './helpers/increaseTime';
 import latestTime from './helpers/latestTime';
 import expectThrow from './helpers/expectThrow';
 import PromisifyWeb3 from './helpers/promisifyWeb3';
@@ -31,5 +31,31 @@ contract('TimedStateMachine', accounts => {
     await expectThrow(timedStateMachine.setStageStartTimeHelper(stage1, timestamp));
     await expectThrow(timedStateMachine.setStageStartTimeHelper(stage2, timestamp));
     await expectThrow(timedStateMachine.setStageStartTimeHelper(stage3, timestamp));
+  });
+
+  it('should be possible to set a start time', async () => {
+    const timestamp = (await latestTime()) + duration.weeks(1);
+
+    await timedStateMachine.setStageStartTimeHelper(stage1, timestamp);
+
+    const _timestamp = await timedStateMachine.getStageStartTime.call(stage1);
+
+    assert.equal(timestamp, _timestamp);
+
+  });
+
+  it('should should transition to the next stage if the set timestamp is reached', async () => {
+    const timestamp = (await latestTime()) + duration.weeks(1);
+
+    await timedStateMachine.setStageStartTimeHelper(stage1, timestamp);
+
+    await increaseTime(duration.weeks(1.1));
+
+    await timedStateMachine.conditionalTransitions();
+
+    const currentStage = web3.toUtf8(await timedStateMachine.getCurrentStageId.call());
+
+    assert.equal(currentStage, stage1);
+
   });
 });

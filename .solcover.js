@@ -7,5 +7,6 @@ module.exports = {
   // copyPackages: [],
   skipFiles: [
     'mocks',
+    'examples'
   ]
 };

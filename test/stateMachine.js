@@ -35,6 +35,15 @@ contract('StateMachine', accounts => {
     await stateMachine.allowFunction(stage3, dummyFunctionSelector);
   });
 
+  it('should not be possible to call an unallowed function', async () => {
+    await expectThrow(stateMachine.dummyFunction());
+  });
+
+  it('should be possible to call an allowed function', async () => {
+    await stateMachine.allowFunction(stage0, dummyFunctionSelector);
+    await stateMachine.dummyFunction();
+  });
+
   // TODO: review this.. it improves coverage but it doesn't seem necessary
   it('should not perform conditional transitions at any stage', async () => {
     let currentStage;
