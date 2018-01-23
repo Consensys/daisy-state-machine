@@ -41,9 +41,9 @@ contract StateMachineUser is TimedStateMachine {
     }
 
     // Callback when entering each stage
-    function onStage1() internal { /* Do something */ }
-    function onStage2() internal { /* Do something */ }
-    function onStage3() internal { /* Do something */ }
+    function onStage1() internal pure { /* Do something */ }
+    function onStage2() internal pure { /* Do something */ }
+    function onStage3() internal pure { /* Do something */ }
 
     // Override from StateMachine.sol
     function onTransition(bytes32 stageId) internal {
