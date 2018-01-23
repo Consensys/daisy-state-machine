@@ -1,7 +1,4 @@
 import expectThrow from './helpers/expectThrow';
-import PromisifyWeb3 from './helpers/promisifyWeb3';
-
-PromisifyWeb3.promisify(web3);
 
 const StateMachineMock = artifacts.require('StateMachineMock.sol');
 

@@ -1,9 +1,6 @@
 import increaseTime, { duration } from './helpers/increaseTime';
 import latestTime from './helpers/latestTime';
 import expectThrow from './helpers/expectThrow';
-import PromisifyWeb3 from './helpers/promisifyWeb3';
-
-PromisifyWeb3.promisify(web3);
 
 const TimedStateMachineMock = artifacts.require('TimedStateMachineMock.sol');
 
