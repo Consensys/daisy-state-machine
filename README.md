@@ -1,26 +1,33 @@
 # State Machine
 
-## Docs
+In order to use, build and test the contracts found in this repo, [Truffle](truffleframework.com) version > 4 is needed.
 
-Please read the [docs](./docs/StateMachine.md) and the [examples](./contracts/examples/) in order to learn how to use this.
+## Usage
 
-## Instructions
+First install as a npm package in your truffle project directory:
+```
+npm install -E @tokenfoundry/state-machine
+```
 
-In order to build and test the contracts found in this repo, [Truffle](truffleframework.com) version > 4 is needed.
+Import in your contracts:
+```
+import "@tokenfoundry/state-machine/contracts/StateMachine.sol";
 
-### Building
+contract MyContract is StateMachine {
+  ...
+}
+```
 
-Once the repo is cloned, run `npm install` to install all the dependencies.
+Please read the [docs](./docs/StateMachine.md) and the [examples](./contracts/examples/) for more information about how to use this.
 
-Running `truffle compile` will compile the contract code and place the output in the `build/contracts` directory.
 
-### Testing
+## Testing
 
-`truffle test` to run all the tests.
+To run the tests, clone this repo and run `npm install` to install dependencies.
 
-`npm run coverage` to run tests and get code coverage.
+Run `truffle test` to run all the tests.
 
-To perform test on a local Geth node, `cd` into the project directory and do the following:
+Run `npm run coverage` to run tests and get code coverage.
 
 ## License
 

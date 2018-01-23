@@ -1,5 +1,5 @@
 {
-  "name": "state-machine",
+  "name": "@tokenfoundry/state-machine",
   "version": "1.0.0",
   "description": "Solidity framework to implement a state machine pattern.",
   "scripts": {
