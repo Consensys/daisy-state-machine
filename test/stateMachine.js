@@ -52,7 +52,7 @@ contract('StateMachine', accounts => {
     currentStage = await stateMachine.getCurrentStageId.call();
     assert.equal(web3.toUtf8(currentStage), stage0);
 
-    await stateMachine.goToNextStage();
+    await stateMachine.goToNextStageHelper();
     currentStage = await stateMachine.getCurrentStageId.call();
     assert.equal(web3.toUtf8(currentStage), stage1);
 
@@ -61,7 +61,7 @@ contract('StateMachine', accounts => {
     currentStage = await stateMachine.getCurrentStageId.call();
     assert.equal(web3.toUtf8(currentStage), stage1);
 
-    await stateMachine.goToNextStage();
+    await stateMachine.goToNextStageHelper();
     currentStage = await stateMachine.getCurrentStageId.call();
     assert.equal(web3.toUtf8(currentStage), stage2);
 
@@ -70,7 +70,7 @@ contract('StateMachine', accounts => {
     currentStage = await stateMachine.getCurrentStageId.call();
     assert.equal(web3.toUtf8(currentStage), stage2);
 
-    await stateMachine.goToNextStage();
+    await stateMachine.goToNextStageHelper();
     currentStage = await stateMachine.getCurrentStageId.call();
     assert.equal(web3.toUtf8(currentStage), stage3);
 
@@ -80,14 +80,27 @@ contract('StateMachine', accounts => {
     assert.equal(web3.toUtf8(currentStage), stage3);
   });
 
+  it('should not be possible to go to stage 3 if the required conditions are not met', async () => {
+    await stateMachine.setRequired(false);
+    await stateMachine.goToNextStageHelper();
+    await stateMachine.goToNextStageHelper();
+    await expectThrow(stateMachine.goToNextStageHelper());
+  });
+
+  it('should be possible to go to stage 3 if the required conditions are met', async () => {
+    await stateMachine.goToNextStageHelper();
+    await stateMachine.goToNextStageHelper();
+    await stateMachine.goToNextStageHelper();
+  });
+
   it('should not be possible to go to next stage when in the last stage', async () => {
     // Go to stage 1
-    await stateMachine.goToNextStage();
+    await stateMachine.goToNextStageHelper();
     // Go to stage 2
-    await stateMachine.goToNextStage();
+    await stateMachine.goToNextStageHelper();
     // Go to stage 3
-    await stateMachine.goToNextStage();
+    await stateMachine.goToNextStageHelper();
     // Should throw because stage 3 is the last stage
-    await expectThrow(stateMachine.goToNextStage());
+    await expectThrow(stateMachine.goToNextStageHelper());
   });
 });

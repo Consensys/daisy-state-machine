@@ -1,6 +1,7 @@
-pragma solidity 0.4.18;
+pragma solidity 0.4.19;
 
 import "../../contracts/TimedStateMachine.sol";
+
 
 contract TimedStateMachineMock is TimedStateMachine {
     bytes32 public constant STAGE0 = "STAGE0";

@@ -1,8 +1,9 @@
-pragma solidity 0.4.18;
+pragma solidity 0.4.19;
 
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
 import "../contracts/StateMachineLib.sol";
+
 
 contract TestStateMachineLib {
     using StateMachineLib for StateMachineLib.State;

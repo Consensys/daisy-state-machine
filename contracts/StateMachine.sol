@@ -38,7 +38,7 @@ contract StateMachine {
         while (state.validStage[nextId]) {
             StateMachineLib.Stage storage next = state.stages[nextId];
             // If the next stage's condition is true, go to next stage and continue
-            if (startConditions(nextId)) {
+            if (startConditions(nextId) && requiredConditions(nextId)) {
                 state.goToNextStage();
                 nextId = next.nextId;
             } else {
@@ -47,16 +47,26 @@ contract StateMachine {
         }
     }
 
+    /// @dev Goes to the next stage if required conditions are made.
+    function goToNextStage() internal {
+        require(requiredConditions(state.stages[state.currentStageId].nextId));
+        state.goToNextStage();
+    }
+
     /// @dev Determines whether the conditions for transitioning to the given stage are met.
     /// @return true if the conditions are met for the given stageId. False by default (must override in child contracts).
     function startConditions(bytes32) internal constant returns(bool) {
         return false;
     }
 
+    /// @dev Determines if it is possible to transition to the given stage.
+    /// @return true if it is possible to go to the given stage. True by default (must override in child contracts).
+    function requiredConditions(bytes32) internal constant returns(bool) {
+        return true;
+    }
+
     /// @dev Callback called when there is a stage transition. It should be overridden for additional functionality.
     function onTransition(bytes32 stageId) internal {
         LogTransition(stageId, block.number);
     }
-
-
 }
