@@ -6,7 +6,14 @@ import "./StateMachineLib.sol";
 contract StateMachine {
     using StateMachineLib for StateMachineLib.State;
 
+    struct CallbackWrapper {
+      bool valid;
+      function() internal callback;
+    }
+
     event LogTransition(bytes32 indexed stageId, uint256 blockNumber);
+
+    mapping(bytes32 => CallbackWrapper) onTransitionCallbacks;
 
     StateMachineLib.State internal state;
 
@@ -65,8 +72,21 @@ contract StateMachine {
         return true;
     }
 
-    /// @dev Callback called when there is a stage transition. It should be overridden for additional functionality.
+    /// @dev Registers a callback for a stage transition
+    function registerCallback(bytes32 stageId, function() internal callback) internal {
+        CallbackWrapper storage cb = onTransitionCallbacks[stageId];
+        cb.valid = true;
+        cb.callback = callback;
+    }
+
+    /// @dev Callback called when there is a stage transition.
     function onTransition(bytes32 stageId) internal {
+        CallbackWrapper storage cb = onTransitionCallbacks[stageId];
+
+        if (cb.valid) {
+            cb.callback();
+        }
+
         LogTransition(stageId, block.number);
     }
 }
