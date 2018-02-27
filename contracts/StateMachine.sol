@@ -73,7 +73,7 @@ contract StateMachine {
     }
 
     /// @dev Registers a callback for a stage transition
-    function registerCallback(bytes32 stageId, function() internal callback) internal {
+    function setStageCallback(bytes32 stageId, function() internal callback) internal {
         CallbackWrapper storage cb = onTransitionCallbacks[stageId];
         cb.valid = true;
         cb.callback = callback;
