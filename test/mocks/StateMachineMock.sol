@@ -10,13 +10,12 @@ contract StateMachineMock is StateMachine {
     bytes32 public constant STAGE1 = "STAGE1";
     bytes32 public constant STAGE2 = "STAGE2";
     bytes32 public constant STAGE3 = "STAGE3";
+    bytes32[] stages = [STAGE0, STAGE1, STAGE2, STAGE3];
+
     bool public requiredDummy = true;
 
     function StateMachineMock() public { 
-        state.setInitialStage(STAGE0);
-        state.createTransition(STAGE0, STAGE1);
-        state.createTransition(STAGE1, STAGE2);
-        state.createTransition(STAGE2, STAGE3);
+        state.setStages(stages);
     }
 
     function dummyFunction() public checkAllowed {

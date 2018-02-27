@@ -13,6 +13,8 @@ contract TestStateMachineLib {
     bytes32 constant STAGE3 = "stage3";
     bytes32 constant STAGE4 = "stage4";
 
+    bytes32[] stages = [STAGE1, STAGE2, STAGE3, STAGE4];
+
     // Stages that will override existing stages
     bytes32 constant STAGEOVERRIDE1 = "override1";
     bytes32 constant STAGEOVERRIDE2 = "override2";
@@ -28,12 +30,9 @@ contract TestStateMachineLib {
     function dummy() public pure {}
 
     function beforeEach() public {
-        state.setInitialStage(STAGE1);
-        state.createTransition(STAGE1, STAGE2);
-        state.createTransition(STAGE2, STAGE3);
-        state.createTransition(STAGE3, STAGE4);
 
-        state.onTransition = dummyCallback;
+        state = StateMachineLib.State(0, dummyCallback);
+        state.setStages(stages);
 
         // dummyCallbackCalled[STAGE1] = false;
         dummyCallbackCalled[STAGE2] = false;

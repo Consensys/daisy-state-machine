@@ -29,6 +29,7 @@ library StateMachineLib {
     /// @dev Creates and sets the initial stage. It has to be called before creating any transitions.
     /// @param stageId The id of the (new) stage to set as initial stage.
     function setInitialStage(State storage self, bytes32 stageId) internal {
+        require(self.currentStageId == 0);
         self.validStage[stageId] = true;
         self.currentStageId = stageId;
     }
@@ -49,6 +50,18 @@ library StateMachineLib {
 
         from.nextId = toId;
         self.validStage[toId] = true;
+    }
+
+    /// @dev Creates the given stages.
+    /// @param stageIds Array of stage ids.
+    function setStages(State storage self, bytes32[] stageIds) internal {
+        require(stageIds.length > 0);
+
+        setInitialStage(self, stageIds[0]);
+
+        for (uint256 i = 1; i < stageIds.length; i++) {
+            createTransition(self, stageIds[i - 1], stageIds[i]);
+        }
     }
 
     /// @dev Goes to the next stage if posible (if the next stage is valid)
