@@ -80,17 +80,42 @@ contract('StateMachine', accounts => {
     assert.equal(web3.toUtf8(currentStage), stage3);
   });
 
-  it('should not be possible to go to stage 3 if the required conditions are not met', async () => {
-    await stateMachine.setRequired(false);
-    await stateMachine.goToNextStageHelper();
-    await stateMachine.goToNextStageHelper();
-    await expectThrow(stateMachine.goToNextStageHelper());
+  it('should not be possible to set a start condition for an invalid stage', async () => {
+    await expectThrow(stateMachine.setDummyCondition(invalidStage));
+    await expectThrow(stateMachine.setDummyVariableCondition(invalidStage));
   });
 
-  it('should be possible to go to stage 3 if the required conditions are met', async () => {
-    await stateMachine.goToNextStageHelper();
-    await stateMachine.goToNextStageHelper();
-    await stateMachine.goToNextStageHelper();
+  it('should automatically go to a stage with a condition that evaluates to true', async () => {
+    let currentStage;
+    currentStage = await stateMachine.getCurrentStageId.call();
+    assert.equal(web3.toUtf8(currentStage), stage0);
+
+    await stateMachine.conditionalTransitions();
+
+    currentStage = await stateMachine.getCurrentStageId.call();
+    assert.equal(web3.toUtf8(currentStage), stage0);
+
+    await stateMachine.setDummyCondition(stage1);
+    await stateMachine.conditionalTransitions();
+
+    currentStage = await stateMachine.getCurrentStageId.call();
+    assert.equal(web3.toUtf8(currentStage), stage1);
+
+    await stateMachine.setDummyVariableCondition(stage2);
+    await stateMachine.conditionalTransitions();
+
+    currentStage = await stateMachine.getCurrentStageId.call();
+    assert.equal(web3.toUtf8(currentStage), stage1);
+
+    await stateMachine.setCondition(true);
+    await stateMachine.conditionalTransitions();
+
+    currentStage = await stateMachine.getCurrentStageId.call();
+    assert.equal(web3.toUtf8(currentStage), stage2);
+  });
+
+  it('should not be possible to set a callback for an invalid stage', async () => {
+    await expectThrow(stateMachine.setDummyCallback(invalidStage));
   });
 
   it('should not be possible to go to next stage when in the last stage', async () => {

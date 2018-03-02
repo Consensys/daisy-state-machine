@@ -16,7 +16,8 @@ contract TimedStateMachine is StateMachine {
         // Get the startTime for stage
         uint256 start = startTime[stageId];
         // If the startTime is set and has already passed, return true.
-        return start != 0 && block.timestamp > start;
+        if (start != 0 && block.timestamp > start) return true;
+        return super.startConditions(stageId);
     }
 
     /// @dev Sets the starting timestamp for a stage.

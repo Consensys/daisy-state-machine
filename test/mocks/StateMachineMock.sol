@@ -12,13 +12,26 @@ contract StateMachineMock is StateMachine {
     bytes32 public constant STAGE3 = "STAGE3";
     bytes32[] stages = [STAGE0, STAGE1, STAGE2, STAGE3];
 
-    bool public requiredDummy = true;
+    bool condition = false;
+    bool callbackCalled = false;
 
     function StateMachineMock() public { 
         state.setStages(stages);
     }
 
     function dummyFunction() public checkAllowed {
+    }
+
+    function dummyCondition() internal view returns(bool) {
+        return true;
+    }
+
+    function dummyVariableCondition() internal view returns(bool) {
+        return condition;
+    }
+
+    function dummyCallback() internal {
+        callbackCalled = true;
     }
 
     // Helper to test creating transitions
@@ -31,20 +44,28 @@ contract StateMachineMock is StateMachine {
         goToNextStage();
     }
 
+    // Sets the dummy condition for a stage
+    function setDummyCondition(bytes32 stageId) public {
+        setStageStartCondition(stageId, dummyCondition);
+    }
+
+    function setCondition(bool _condition) public {
+        condition = _condition;
+    }
+
+    // Sets the dummy callback condition for a stage
+    function setDummyVariableCondition(bytes32 stageId) public {
+        setStageStartCondition(stageId, dummyVariableCondition);
+    }
+
+    // Sets the dummy callback for a stage
+    function setDummyCallback(bytes32 stageId) public {
+        setStageCallback(stageId, dummyCallback);
+    }
+
     // Helper to test allowing a function
     function allowFunction(bytes32 stageId, bytes4 selector) public {
         state.allowFunction(stageId, selector);
     }
-
-    // Helper to test required conditions
-    function setRequired(bool required) public {
-        requiredDummy = required;
-    }
-
-    function requiredConditions(bytes32 stageId) internal constant returns(bool) {
-        if (stageId == STAGE3 && !requiredDummy) return false;
-        return true;
-    }
-
 
 }

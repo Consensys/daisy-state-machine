@@ -7,13 +7,19 @@ contract StateMachine {
     using StateMachineLib for StateMachineLib.State;
 
     struct CallbackWrapper {
-      bool valid;
-      function() internal callback;
+        bool valid;
+        function() internal callback;
+    }
+
+    struct ConditionWrapper {
+        bool valid;
+        function() internal view returns(bool) condition;
     }
 
     event LogTransition(bytes32 indexed stageId, uint256 blockNumber);
 
-    mapping(bytes32 => CallbackWrapper) onTransitionCallbacks;
+    mapping(bytes32 => CallbackWrapper) private callbacks;
+    mapping(bytes32 => ConditionWrapper) private conditions;
 
     StateMachineLib.State internal state;
 
@@ -45,7 +51,7 @@ contract StateMachine {
         while (state.validStage[nextId]) {
             StateMachineLib.Stage storage next = state.stages[nextId];
             // If the next stage's condition is true, go to next stage and continue
-            if (startConditions(nextId) && requiredConditions(nextId)) {
+            if (startConditions(nextId)) {
                 state.goToNextStage();
                 nextId = next.nextId;
             } else {
@@ -56,36 +62,36 @@ contract StateMachine {
 
     /// @dev Goes to the next stage if required conditions are made.
     function goToNextStage() internal {
-        require(requiredConditions(state.stages[state.currentStageId].nextId));
         state.goToNextStage();
+    }
+
+    /// @dev Sets the start conditions for a stage
+    function setStageStartCondition(bytes32 stageId, function() internal view returns(bool) condition) internal {
+        require(state.validStage[stageId]);
+        conditions[stageId] = ConditionWrapper(true, condition);
     }
 
     /// @dev Determines whether the conditions for transitioning to the given stage are met.
     /// @return true if the conditions are met for the given stageId. False by default (must override in child contracts).
-    function startConditions(bytes32) internal constant returns(bool) {
-        return false;
-    }
+    function startConditions(bytes32 stageId) internal constant returns(bool) {
+        ConditionWrapper storage wrapper = conditions[stageId];
 
-    /// @dev Determines if it is possible to transition to the given stage.
-    /// @return true if it is possible to go to the given stage. True by default (must override in child contracts).
-    function requiredConditions(bytes32) internal constant returns(bool) {
-        return true;
+        if (wrapper.valid) return wrapper.condition();
+
+        return false;
     }
 
     /// @dev Registers a callback for a stage transition
     function setStageCallback(bytes32 stageId, function() internal callback) internal {
-        CallbackWrapper storage cb = onTransitionCallbacks[stageId];
-        cb.valid = true;
-        cb.callback = callback;
+        require(state.validStage[stageId]);
+        callbacks[stageId] = CallbackWrapper(true, callback);
     }
 
     /// @dev Callback called when there is a stage transition.
     function onTransition(bytes32 stageId) internal {
-        CallbackWrapper storage cb = onTransitionCallbacks[stageId];
+        CallbackWrapper storage wrapper = callbacks[stageId];
 
-        if (cb.valid) {
-            cb.callback();
-        }
+        if (wrapper.valid) wrapper.callback();
 
         LogTransition(stageId, block.number);
     }
