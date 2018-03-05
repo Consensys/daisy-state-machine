@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Solidity framework to implement a state machine pattern.",
   "scripts": {
+    "test": "truffle test",
     "lint": "eslint .",
     "coverage": "solidity-coverage",
     "generate-wallet": "node ./scripts/generateWallet.js",
@@ -30,6 +31,7 @@
     "ethereumjs-wallet": "^0.6.0",
     "inquirer": "^5.0.0",
     "solidity-coverage": "^0.4.7",
+    "truffle": "^4.1.0",
     "web3-provider-engine": "^13.5.0"
   },
   "babel": {
