@@ -1,5 +1,7 @@
 # State Machine
 
+[![Coverage Status](https://coveralls.io/repos/github/tokenfoundry/state-machine/badge.svg?branch=master)](https://coveralls.io/github/tokenfoundry/state-machine?branch=master)
+
 In order to use, build and test the contracts found in this repo, [Truffle](truffleframework.com) version > 4 is needed.
 
 ## Usage
