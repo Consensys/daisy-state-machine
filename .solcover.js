@@ -5,6 +5,8 @@ module.exports = {
   // norpc: true,
   // dir: './secretDirectory',
   // copyPackages: [],
+  testCommand: 'node ../node_modules/.bin/truffle test --network coverage',
+  compileCommand: 'node ../node_modules/.bin/truffle compile --network coverage',
   skipFiles: [
     'mocks',
     'examples'
