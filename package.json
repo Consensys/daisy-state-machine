@@ -12,6 +12,7 @@
     "test": "truffle test",
     "lint": "eslint .",
     "coverage": "solidity-coverage",
+    "coverage-ci": "solidity-coverage && cat coverage/lcov.info | coveralls",
     "generate-wallet": "node ./scripts/generateWallet.js",
     "get-private-key": "node ./scripts/getPrivateKey.js"
   },
