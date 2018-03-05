@@ -13,7 +13,8 @@ contract StateMachine {
 
     struct ConditionWrapper {
         bool valid;
-        function() internal view returns(bool) condition;
+        // TODO: make the condition a 'view' once solidity-coverage is fixed.
+        function() internal returns(bool) condition;
     }
 
     event LogTransition(bytes32 indexed stageId, uint256 blockNumber);
@@ -66,7 +67,7 @@ contract StateMachine {
     }
 
     /// @dev Sets the start conditions for a stage
-    function setStageStartCondition(bytes32 stageId, function() internal view returns(bool) condition) internal {
+    function setStageStartCondition(bytes32 stageId, function() internal returns(bool) condition) internal {
         require(state.validStage[stageId]);
         conditions[stageId] = ConditionWrapper(true, condition);
     }

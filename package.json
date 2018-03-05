@@ -11,7 +11,6 @@
   "scripts": {
     "test": "truffle test",
     "lint": "eslint .",
-    "test": "truffle test",
     "coverage": "solidity-coverage",
     "generate-wallet": "node ./scripts/generateWallet.js",
     "get-private-key": "node ./scripts/getPrivateKey.js"

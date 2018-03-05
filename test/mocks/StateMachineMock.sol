@@ -6,27 +6,24 @@ import "../../contracts/StateMachine.sol";
 contract StateMachineMock is StateMachine {
     bytes4 public dummyFunctionSelector = this.dummyFunction.selector;
 
-    bytes32 public constant STAGE0 = "STAGE0";
-    bytes32 public constant STAGE1 = "STAGE1";
-    bytes32 public constant STAGE2 = "STAGE2";
-    bytes32 public constant STAGE3 = "STAGE3";
-    bytes32[] stages = [STAGE0, STAGE1, STAGE2, STAGE3];
-
-    bool condition = false;
-    bool callbackCalled = false;
+    bool public condition = false;
+    bool public callbackCalled = false;
 
     function StateMachineMock() public { 
-        state.setStages(stages);
+    }
+
+    function setStagesHelper(bytes32[] _stages) public {
+        state.setStages(_stages);
     }
 
     function dummyFunction() public checkAllowed {
     }
 
-    function dummyCondition() internal view returns(bool) {
+    function dummyCondition() internal returns(bool) {
         return true;
     }
 
-    function dummyVariableCondition() internal view returns(bool) {
+    function dummyVariableCondition() internal returns(bool) {
         return condition;
     }
 

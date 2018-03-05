@@ -14,7 +14,17 @@ contract('StateMachine', accounts => {
 
   beforeEach(async () => {
     stateMachine = await StateMachineMock.new();
+    await stateMachine.setStagesHelper([stage0, stage1, stage2, stage3]);
     dummyFunctionSelector = await stateMachine.dummyFunctionSelector.call();
+  });
+
+  it('should not be possible to set an initial stage if there is already one', async () => {
+    await expectThrow(stateMachine.setStagesHelper([invalidStage]));
+  });
+
+  it('should not be possible to use an empty array for setting the stages', async () => {
+    stateMachine = await StateMachineMock.new();
+    await expectThrow(stateMachine.setStagesHelper([]));
   });
 
   it('should not be possible to create a transition from an invalid stage', async () => {
@@ -116,6 +126,21 @@ contract('StateMachine', accounts => {
 
   it('should not be possible to set a callback for an invalid stage', async () => {
     await expectThrow(stateMachine.setDummyCallback(invalidStage));
+  });
+
+  it('should be possible to set a callback for a valid stage', async () => {
+    let callbackCalled;
+    callbackCalled = await stateMachine.callbackCalled.call();
+    assert.isFalse(callbackCalled);
+
+    await stateMachine.setDummyCallback(stage1);
+    callbackCalled = await stateMachine.callbackCalled.call();
+    assert.isFalse(callbackCalled);
+
+
+    await stateMachine.goToNextStageHelper();
+    callbackCalled = await stateMachine.callbackCalled.call();
+    assert.isTrue(callbackCalled);
   });
 
   it('should not be possible to go to next stage when in the last stage', async () => {
