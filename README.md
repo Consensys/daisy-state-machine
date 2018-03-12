@@ -9,7 +9,7 @@ In order to use, build and test the contracts found in this repo, [Truffle](truf
 
 First install as a npm package in your truffle project directory:
 ```
-npm install -E @tokenfoundry/state-machine
+yarn add -E @tokenfoundry/state-machine
 ```
 
 Import in your contracts:
@@ -26,11 +26,11 @@ Please read the [docs](./docs/StateMachine.md) and the [examples](./contracts/ex
 
 ## Testing
 
-To run the tests, clone this repo and run `npm install` to install dependencies.
+To run the tests, clone this repo and run `yarn install` to install dependencies.
 
-Run `truffle test` to run all the tests.
+Run `yarn test` to run all the tests.
 
-Run `npm run coverage` to run tests and get code coverage.
+Run `yarn coverage` to run tests and get code coverage.
 
 ## License
 
