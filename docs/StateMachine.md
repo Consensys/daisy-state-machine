@@ -44,3 +44,6 @@ It also contains an internal function called `startConditions` which receives th
 
 The contract `TimedStateMachine` inherits from `StateMachine` and extends its functionalities by adding timestamp based automatic transitions, by overriding the `startConditions` function. This contract also provides the internal functions `setStageStartTime` and `getStageStartTime`.
 
+## Diagram
+
+![Dependency Diagram](/diagrams/stateMachine.png)

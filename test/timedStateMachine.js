@@ -41,7 +41,7 @@ contract('TimedStateMachine', accounts => {
 
   });
 
-  it('should should transition to the next stage if the set timestamp is reached', async () => {
+  it('should transition to the next stage if the set timestamp is reached', async () => {
     const timestamp = (await latestTime()) + duration.weeks(1);
 
     await timedStateMachine.setStageStartTimeHelper(stage1, timestamp);
@@ -50,7 +50,13 @@ contract('TimedStateMachine', accounts => {
 
     await timedStateMachine.conditionalTransitions();
 
-    const currentStage = web3.toUtf8(await timedStateMachine.getCurrentStageId.call());
+    let currentStage = web3.toUtf8(await timedStateMachine.getCurrentStageId.call());
+
+    assert.equal(currentStage, stage1);
+
+    await timedStateMachine.conditionalTransitions(); //calling it again should not affect the expected result
+
+    currentStage = web3.toUtf8(await timedStateMachine.getCurrentStageId.call());
 
     assert.equal(currentStage, stage1);
 
