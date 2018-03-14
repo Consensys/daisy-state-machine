@@ -50,7 +50,13 @@ contract('TimedStateMachine', accounts => {
 
     await timedStateMachine.conditionalTransitions();
 
-    const currentStage = web3.toUtf8(await timedStateMachine.getCurrentStageId.call());
+    let currentStage = web3.toUtf8(await timedStateMachine.getCurrentStageId.call());
+
+    assert.equal(currentStage, stage1);
+
+    await timedStateMachine.conditionalTransitions(); //calling it again should not affect the expected result
+
+    currentStage = web3.toUtf8(await timedStateMachine.getCurrentStageId.call());
 
     assert.equal(currentStage, stage1);
 
