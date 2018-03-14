@@ -46,4 +46,4 @@ The contract `TimedStateMachine` inherits from `StateMachine` and extends its fu
 
 ## Diagram
 
-![Dependency Diagram](diagrams/stateMachine.png)
+![Dependency Diagram](/diagrams/stateMachine.png)
