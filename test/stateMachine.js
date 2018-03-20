@@ -1,6 +1,7 @@
 import expectThrow from './helpers/expectThrow';
 
-const StateMachineMock = artifacts.require('StateMachineMock.sol');
+const StateMachineLib = artifacts.require('StateMachineLib');
+const StateMachineMock = artifacts.require('StateMachineMock');
 
 contract('StateMachine', accounts => {
   let stateMachine;
@@ -13,6 +14,8 @@ contract('StateMachine', accounts => {
 
 
   beforeEach(async () => {
+    const stateMachineLib = await StateMachineLib.new();
+    StateMachineMock.link('StateMachineLib', stateMachineLib.address);
     stateMachine = await StateMachineMock.new();
     await stateMachine.setStagesHelper([stage0, stage1, stage2, stage3]);
     dummyFunctionSelector = await stateMachine.dummyFunctionSelector.call();
@@ -136,7 +139,6 @@ contract('StateMachine', accounts => {
     await stateMachine.setDummyCallback(stage1);
     callbackCalled = await stateMachine.callbackCalled.call();
     assert.isFalse(callbackCalled);
-
 
     await stateMachine.goToNextStageHelper();
     callbackCalled = await stateMachine.callbackCalled.call();

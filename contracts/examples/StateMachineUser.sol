@@ -37,14 +37,14 @@ contract StateMachineUser is TimedStateMachine {
         state.allowFunction(STAGE2, this.bar.selector);
         state.allowFunction(STAGE3, 0); // Allow fallback function
 
-        setStageCallback(STAGE1, onStage1);
-        setStageCallback(STAGE2, onStage2);
-        setStageCallback(STAGE3, onStage3);
+        state.addCallback(STAGE1, onStage1);
+        state.addCallback(STAGE2, onStage2);
+        state.addCallback(STAGE3, onStage3);
 
         setStageStartTime(STAGE2, now + 2 weeks);
         setStageStartTime(STAGE3, now + 3 weeks);
 
-        setStageStartCondition(STAGE4, shouldStage4Start);
+        state.addStartCondition(STAGE4, shouldStage4Start);
     }
 
     // Callback when entering each stage
@@ -52,7 +52,7 @@ contract StateMachineUser is TimedStateMachine {
     function onStage2() internal { /* Do something */ }
     function onStage3() internal { /* Do something */ }
 
-    function shouldStage4Start() internal returns(bool) {
+    function shouldStage4Start(bytes32) internal returns(bool) {
         return true;
     }
 

@@ -19,11 +19,11 @@ contract StateMachineMock is StateMachine {
     function dummyFunction() public checkAllowed {
     }
 
-    function dummyCondition() internal returns(bool) {
+    function dummyCondition(bytes32) internal returns(bool) {
         return true;
     }
 
-    function dummyVariableCondition() internal returns(bool) {
+    function dummyVariableCondition(bytes32) internal returns(bool) {
         return condition;
     }
 
@@ -38,12 +38,12 @@ contract StateMachineMock is StateMachine {
 
     // Helper to test going to next stage
     function goToNextStageHelper() public {
-        goToNextStage();
+        state.goToNextStage();
     }
 
     // Sets the dummy condition for a stage
     function setDummyCondition(bytes32 stageId) public {
-        setStageStartCondition(stageId, dummyCondition);
+        state.addStartCondition(stageId, dummyCondition);
     }
 
     function setCondition(bool _condition) public {
@@ -52,12 +52,12 @@ contract StateMachineMock is StateMachine {
 
     // Sets the dummy callback condition for a stage
     function setDummyVariableCondition(bytes32 stageId) public {
-        setStageStartCondition(stageId, dummyVariableCondition);
+        state.addStartCondition(stageId, dummyVariableCondition);
     }
 
     // Sets the dummy callback for a stage
     function setDummyCallback(bytes32 stageId) public {
-        setStageCallback(stageId, dummyCallback);
+        state.addCallback(stageId, dummyCallback);
     }
 
     // Helper to test allowing a function

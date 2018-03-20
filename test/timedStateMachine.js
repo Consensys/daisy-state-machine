@@ -2,7 +2,8 @@ import increaseTime, { duration } from './helpers/increaseTime';
 import latestTime from './helpers/latestTime';
 import expectThrow from './helpers/expectThrow';
 
-const TimedStateMachineMock = artifacts.require('TimedStateMachineMock.sol');
+const StateMachineLib = artifacts.require('StateMachineLib');
+const TimedStateMachineMock = artifacts.require('TimedStateMachineMock');
 
 contract('TimedStateMachine', accounts => {
   let timedStateMachine;
@@ -13,6 +14,8 @@ contract('TimedStateMachine', accounts => {
   let stage3 = 'STAGE3';
 
   beforeEach(async () => {
+    const stateMachineLib = await StateMachineLib.new();
+    TimedStateMachineMock.link('StateMachineLib', stateMachineLib.address);
     timedStateMachine = await TimedStateMachineMock.new();
   });
 
@@ -46,7 +49,7 @@ contract('TimedStateMachine', accounts => {
 
     await timedStateMachine.setStageStartTimeHelper(stage1, timestamp);
 
-    await increaseTime(duration.weeks(1.1));
+    await increaseTime(duration.weeks(2));
 
     await timedStateMachine.conditionalTransitions();
 
