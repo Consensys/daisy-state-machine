@@ -6,125 +6,125 @@ import "../contracts/StateMachineLib.sol";
 
 
 contract TestStateMachineLib {
-    using StateMachineLib for StateMachineLib.State;
+    using StateMachineLib for StateMachineLib.StateMachine;
 
-    bytes32 constant STAGE1 = "stage1";
-    bytes32 constant STAGE2 = "stage2";
-    bytes32 constant STAGE3 = "stage3";
-    bytes32 constant STAGE4 = "stage4";
+    bytes32 constant STATE1 = "state1";
+    bytes32 constant STATE2 = "state2";
+    bytes32 constant STATE3 = "state3";
+    bytes32 constant STATE4 = "state4";
 
-    bytes32[] stages = [STAGE1, STAGE2, STAGE3, STAGE4];
+    bytes32[] states = [STATE1, STATE2, STATE3, STATE4];
 
-    // Stages that will override existing stages
-    bytes32 constant STAGEOVERRIDE1 = "override1";
-    bytes32 constant STAGEOVERRIDE2 = "override2";
-    bytes32 constant STAGEOVERRIDE3 = "override3";
+    // States that will override existing states
+    bytes32 constant STATEOVERRIDE1 = "override1";
+    bytes32 constant STATEOVERRIDE2 = "override2";
+    bytes32 constant STATEOVERRIDE3 = "override3";
 
-    StateMachineLib.State state;
+    StateMachineLib.StateMachine stateMachine;
 
     mapping(bytes32 => bool) dummyCallbackCalled;
-    function dummyCallback(bytes32 stage) internal { 
-        dummyCallbackCalled[stage] = true; 
+    function dummyCallback(bytes32 state) internal { 
+        dummyCallbackCalled[state] = true; 
     }
 
     function dummy() public pure {}
 
     function beforeEach() public {
 
-        state = StateMachineLib.State(0, dummyCallback);
-        state.setStages(stages);
+        stateMachine = StateMachineLib.StateMachine(0, dummyCallback);
+        stateMachine.setStates(states);
 
-        // dummyCallbackCalled[STAGE1] = false;
-        dummyCallbackCalled[STAGE2] = false;
-        dummyCallbackCalled[STAGE3] = false;
-        dummyCallbackCalled[STAGE4] = false;
-        dummyCallbackCalled[STAGEOVERRIDE1] = false;
-        dummyCallbackCalled[STAGEOVERRIDE2] = false;
-        dummyCallbackCalled[STAGEOVERRIDE3] = false;
+        // dummyCallbackCalled[STATE1] = false;
+        dummyCallbackCalled[STATE2] = false;
+        dummyCallbackCalled[STATE3] = false;
+        dummyCallbackCalled[STATE4] = false;
+        dummyCallbackCalled[STATEOVERRIDE1] = false;
+        dummyCallbackCalled[STATEOVERRIDE2] = false;
+        dummyCallbackCalled[STATEOVERRIDE3] = false;
     }
 
-    function testStagesShouldBeValid() public {
-        Assert.isTrue(state.validStage[STAGE1], "STAGE1 should be valid");
-        Assert.isTrue(state.validStage[STAGE2], "STAGE2 should be valid");
-        Assert.isTrue(state.validStage[STAGE3], "STAGE3 should be valid");
-        Assert.isTrue(state.validStage[STAGE4], "STAGE4 should be valid");
+    function testStatesShouldBeValid() public {
+        Assert.isTrue(stateMachine.validState[STATE1], "STATE1 should be valid");
+        Assert.isTrue(stateMachine.validState[STATE2], "STATE2 should be valid");
+        Assert.isTrue(stateMachine.validState[STATE3], "STATE3 should be valid");
+        Assert.isTrue(stateMachine.validState[STATE4], "STATE4 should be valid");
     }
 
     function testTransitionsShouldWork() public {
-        Assert.equal(state.currentStageId, STAGE1, "State should start at STAGE1");
+        Assert.equal(stateMachine.currentStateId, STATE1, "StateMachine should start at STATE1");
 
-        state.goToNextStage();
-        Assert.equal(state.currentStageId, STAGE2, "State should have transitioned to STAGE2");
+        stateMachine.goToNextState();
+        Assert.equal(stateMachine.currentStateId, STATE2, "StateMachine should have transitioned to STATE2");
 
-        state.goToNextStage();
-        Assert.equal(state.currentStageId, STAGE3, "State should have transitioned to STAGE3");
+        stateMachine.goToNextState();
+        Assert.equal(stateMachine.currentStateId, STATE3, "StateMachine should have transitioned to STATE3");
 
-        state.goToNextStage();
-        Assert.equal(state.currentStageId, STAGE4, "State should have transitioned to STAGE4");
+        stateMachine.goToNextState();
+        Assert.equal(stateMachine.currentStateId, STATE4, "StateMachine should have transitioned to STATE4");
     }
 
     function testAllowedFunctions() public {
         bool allowed = false;
         bytes4 selector = this.dummy.selector;
         
-        state.allowFunction(STAGE3, selector);
+        stateMachine.allowFunction(STATE3, selector);
 
-        allowed = state.checkAllowedFunction(selector);
-        Assert.isFalse(allowed, "Dummy function should not be allowed in STAGE1");
+        allowed = stateMachine.checkAllowedFunction(selector);
+        Assert.isFalse(allowed, "Dummy function should not be allowed in STATE1");
 
-        state.goToNextStage();
-        allowed = state.checkAllowedFunction(selector);
-        Assert.isFalse(allowed, "Dummy function should not be allowed in STAGE2");
+        stateMachine.goToNextState();
+        allowed = stateMachine.checkAllowedFunction(selector);
+        Assert.isFalse(allowed, "Dummy function should not be allowed in STATE2");
 
-        state.goToNextStage();
-        allowed = state.checkAllowedFunction(selector);
-        Assert.isTrue(allowed, "Dummy function should be allowed in STAGE3");
+        stateMachine.goToNextState();
+        allowed = stateMachine.checkAllowedFunction(selector);
+        Assert.isTrue(allowed, "Dummy function should be allowed in STATE3");
 
-        state.goToNextStage();
-        allowed = state.checkAllowedFunction(selector);
-        Assert.isFalse(allowed, "Dummy function should not be allowed in STAGE4");
+        stateMachine.goToNextState();
+        allowed = stateMachine.checkAllowedFunction(selector);
+        Assert.isFalse(allowed, "Dummy function should not be allowed in STATE4");
     }
 
-    function testStageCallbacksShouldBeCalled() public {
-        // Assert.isTrue(state.getStage(STAGE4).hasCallback, "setCallback should have set the 'hasCallback' bool of STAGE4 to true");
+    function testStateCallbacksShouldBeCalled() public {
+        // Assert.isTrue(stateMachine.getState(STATE4).hasCallback, "setCallback should have set the 'hasCallback' bool of STATE4 to true");
 
-        Assert.isFalse(dummyCallbackCalled[STAGE2], "dummyCallback should not have been called before STAGE2");
-        state.goToNextStage();
-        Assert.isTrue(dummyCallbackCalled[STAGE2], "dummyCallback should have been called when entering STAGE2");
+        Assert.isFalse(dummyCallbackCalled[STATE2], "dummyCallback should not have been called before STATE2");
+        stateMachine.goToNextState();
+        Assert.isTrue(dummyCallbackCalled[STATE2], "dummyCallback should have been called when entering STATE2");
 
-        Assert.isFalse(dummyCallbackCalled[STAGE3], "dummyCallback should not have been called before STAGE3");
-        state.goToNextStage();
-        Assert.isTrue(dummyCallbackCalled[STAGE3], "dummyCallback should have been called when entering STAGE3");
+        Assert.isFalse(dummyCallbackCalled[STATE3], "dummyCallback should not have been called before STATE3");
+        stateMachine.goToNextState();
+        Assert.isTrue(dummyCallbackCalled[STATE3], "dummyCallback should have been called when entering STATE3");
 
-        Assert.isFalse(dummyCallbackCalled[STAGE4], "dummyCallback should not have been called before STAGE4");
-        state.goToNextStage();
-        Assert.isTrue(dummyCallbackCalled[STAGE4], "dummyCallback should have been called when entering STAGE4");
+        Assert.isFalse(dummyCallbackCalled[STATE4], "dummyCallback should not have been called before STATE4");
+        stateMachine.goToNextState();
+        Assert.isTrue(dummyCallbackCalled[STATE4], "dummyCallback should have been called when entering STATE4");
     }
 
-    // Override stage 2 with 3 different stages
-    function testOverridingStagesShouldWork() public {
+    // Override state 2 with 3 different states
+    function testOverridingStatesShouldWork() public {
 
-        // We are "bypassing" STAGE2 by creating transitions STAGE1 -> STAGEOVERRIDE1 -> STAGEOVERRIDE2 -> STAGEOVERRIDE3 -> STAGE3
-        state.createTransition(STAGE1, STAGEOVERRIDE1);
-        state.createTransition(STAGEOVERRIDE1, STAGEOVERRIDE2);
-        state.createTransition(STAGEOVERRIDE2, STAGEOVERRIDE3);
-        state.createTransition(STAGEOVERRIDE3, STAGE3);
+        // We are "bypassing" STATE2 by creating transitions STATE1 -> STATEOVERRIDE1 -> STATEOVERRIDE2 -> STATEOVERRIDE3 -> STATE3
+        stateMachine.createTransition(STATE1, STATEOVERRIDE1);
+        stateMachine.createTransition(STATEOVERRIDE1, STATEOVERRIDE2);
+        stateMachine.createTransition(STATEOVERRIDE2, STATEOVERRIDE3);
+        stateMachine.createTransition(STATEOVERRIDE3, STATE3);
 
-        Assert.isFalse(state.validStage[STAGE2], "STAGE2 should have become invalid");
+        Assert.isFalse(stateMachine.validState[STATE2], "STATE2 should have become invalid");
 
-        state.goToNextStage();
-        Assert.equal(state.currentStageId, STAGEOVERRIDE1, "state should have transitioned to STAGEOVERRIDE1 (instead of STAGE2) from STAGE1");
+        stateMachine.goToNextState();
+        Assert.equal(stateMachine.currentStateId, STATEOVERRIDE1, "stateMachine should have transitioned to STATEOVERRIDE1 (instead of STATE2) from STATE1");
 
-        state.goToNextStage();
-        Assert.equal(state.currentStageId, STAGEOVERRIDE2, "state should have transitioned to STAGEOVERRIDE2 from STAGEOVERRIDE1");
+        stateMachine.goToNextState();
+        Assert.equal(stateMachine.currentStateId, STATEOVERRIDE2, "stateMachine should have transitioned to STATEOVERRIDE2 from STATEOVERRIDE1");
 
-        state.goToNextStage();
-        Assert.equal(state.currentStageId, STAGEOVERRIDE3, "state should have transitioned to STAGEOVERRIDE3 from STAGEOVERRIDE2");
+        stateMachine.goToNextState();
+        Assert.equal(stateMachine.currentStateId, STATEOVERRIDE3, "stateMachine should have transitioned to STATEOVERRIDE3 from STATEOVERRIDE2");
 
-        state.goToNextStage();
-        Assert.equal(state.currentStageId, STAGE3, "state should have transitioned to STAGE3 from STAGEOVERRIDE3");
+        stateMachine.goToNextState();
+        Assert.equal(stateMachine.currentStateId, STATE3, "stateMachine should have transitioned to STATE3 from STATEOVERRIDE3");
 
-        Assert.isFalse(dummyCallbackCalled[STAGE2], "STAGE2's callback should not have been called");
+        Assert.isFalse(dummyCallbackCalled[STATE2], "STATE2's callback should not have been called");
     }
 }
 
