@@ -7,11 +7,11 @@ const TimedStateMachineMock = artifacts.require('TimedStateMachineMock');
 
 contract('TimedStateMachine', accounts => {
   let timedStateMachine;
-  let invalidStage = 'invalid';
-  let stage0 = 'STAGE0';
-  let stage1 = 'STAGE1';
-  let stage2 = 'STAGE2';
-  let stage3 = 'STAGE3';
+  let invalidState = 'invalid';
+  let state0 = 'STATE0';
+  let state1 = 'STATE1';
+  let state2 = 'STATE2';
+  let state3 = 'STATE3';
 
   beforeEach(async () => {
     const stateMachineLib = await StateMachineLib.new();
@@ -20,48 +20,48 @@ contract('TimedStateMachine', accounts => {
   });
 
    
-  it('should not be possible to set the start time for an invalid stage', async () => {
+  it('should not be possible to set the start time for an invalid state', async () => {
     const timestamp = (await latestTime()) + duration.weeks(1);
-    await expectThrow(timedStateMachine.setStageStartTimeHelper(invalidStage, timestamp));
+    await expectThrow(timedStateMachine.setStateStartTimeHelper(invalidState, timestamp));
   });
 
   it('should not be possible to set a start time lower than the current one', async () => {
     const timestamp = (await latestTime()) - duration.weeks(1);
-    await expectThrow(timedStateMachine.setStageStartTimeHelper(stage0, timestamp));
-    await expectThrow(timedStateMachine.setStageStartTimeHelper(stage1, timestamp));
-    await expectThrow(timedStateMachine.setStageStartTimeHelper(stage2, timestamp));
-    await expectThrow(timedStateMachine.setStageStartTimeHelper(stage3, timestamp));
+    await expectThrow(timedStateMachine.setStateStartTimeHelper(state0, timestamp));
+    await expectThrow(timedStateMachine.setStateStartTimeHelper(state1, timestamp));
+    await expectThrow(timedStateMachine.setStateStartTimeHelper(state2, timestamp));
+    await expectThrow(timedStateMachine.setStateStartTimeHelper(state3, timestamp));
   });
 
   it('should be possible to set a start time', async () => {
     const timestamp = (await latestTime()) + duration.weeks(1);
 
-    await timedStateMachine.setStageStartTimeHelper(stage1, timestamp);
+    await timedStateMachine.setStateStartTimeHelper(state1, timestamp);
 
-    const _timestamp = await timedStateMachine.getStageStartTime.call(stage1);
+    const _timestamp = await timedStateMachine.getStateStartTime.call(state1);
 
     assert.equal(timestamp, _timestamp);
 
   });
 
-  it('should transition to the next stage if the set timestamp is reached', async () => {
+  it('should transition to the next state if the set timestamp is reached', async () => {
     const timestamp = (await latestTime()) + duration.weeks(1);
 
-    await timedStateMachine.setStageStartTimeHelper(stage1, timestamp);
+    await timedStateMachine.setStateStartTimeHelper(state1, timestamp);
 
     await increaseTime(duration.weeks(2));
 
     await timedStateMachine.conditionalTransitions();
 
-    let currentStage = web3.toUtf8(await timedStateMachine.getCurrentStageId.call());
+    let currentState = web3.toUtf8(await timedStateMachine.getCurrentStateId.call());
 
-    assert.equal(currentStage, stage1);
+    assert.equal(currentState, state1);
 
     await timedStateMachine.conditionalTransitions(); //calling it again should not affect the expected result
 
-    currentStage = web3.toUtf8(await timedStateMachine.getCurrentStageId.call());
+    currentState = web3.toUtf8(await timedStateMachine.getCurrentStateId.call());
 
-    assert.equal(currentStage, stage1);
+    assert.equal(currentState, state1);
 
   });
 });
