@@ -30,52 +30,52 @@ library StateMachineLib {
 
     /// @dev Creates and sets the initial state. It has to be called before creating any transitions.
     /// @param stateId The id of the (new) state to set as initial state.
-    function setInitialState(StateMachine storage self, bytes32 stateId) public {
-        require(self.currentStateId == 0);
-        self.validState[stateId] = true;
-        self.currentStateId = stateId;
+    function setInitialState(StateMachine storage stateMachine, bytes32 stateId) public {
+        require(stateMachine.currentStateId == 0);
+        stateMachine.validState[stateId] = true;
+        stateMachine.currentStateId = stateId;
     }
 
     /// @dev Creates a transition from 'fromId' to 'toId'. If fromId already had a nextId, it deletes the now unreachable state.
     /// @param fromId The id of the state from which the transition begins.
     /// @param toId The id of the state that will be reachable from "fromId".
-    function createTransition(StateMachine storage self, bytes32 fromId, bytes32 toId) public {
-        require(self.validState[fromId]);
+    function createTransition(StateMachine storage stateMachine, bytes32 fromId, bytes32 toId) public {
+        require(stateMachine.validState[fromId]);
 
-        State storage from = self.states[fromId];
+        State storage from = stateMachine.states[fromId];
 
         // Invalidate the state that won't be reachable any more
         if (from.nextId != 0) {
-            self.validState[from.nextId] = false;
-            delete self.states[from.nextId];
+            stateMachine.validState[from.nextId] = false;
+            delete stateMachine.states[from.nextId];
         }
 
         from.nextId = toId;
-        self.validState[toId] = true;
+        stateMachine.validState[toId] = true;
     }
 
     /// @dev Creates the given states.
     /// @param stateIds Array of state ids.
-    function setStates(StateMachine storage self, bytes32[] stateIds) public {
+    function setStates(StateMachine storage stateMachine, bytes32[] stateIds) public {
         require(stateIds.length > 0);
 
-        setInitialState(self, stateIds[0]);
+        setInitialState(stateMachine, stateIds[0]);
 
         for (uint256 i = 1; i < stateIds.length; i++) {
-            createTransition(self, stateIds[i - 1], stateIds[i]);
+            createTransition(stateMachine, stateIds[i - 1], stateIds[i]);
         }
     }
 
     /// @dev Goes to the next state if posible (if the next state is valid)
-    function goToNextState(StateMachine storage self) public {
-        State storage current = self.states[self.currentStateId];
+    function goToNextState(StateMachine storage stateMachine) public {
+        State storage currentState = stateMachine.states[stateMachine.currentStateId];
 
-        bytes32 nextId = current.nextId;
-        require(self.validState[nextId]);
+        bytes32 nextId = currentState.nextId;
+        require(stateMachine.validState[nextId]);
 
-        self.currentStateId = current.nextId;
+        stateMachine.currentStateId = currentState.nextId;
 
-        State storage next = self.states[nextId];
+        State storage next = stateMachine.states[nextId];
 
         for (uint256 i = 0; i < next.transitionCallbacks.length; i++) {
             next.transitionCallbacks[i]();
@@ -87,39 +87,39 @@ library StateMachineLib {
     /// @dev Checks if the a function is allowed in the current state.
     /// @param selector A function selector (bytes4[keccak256(functionSignature)])
     /// @return true If the function is allowed in the current state
-    function checkAllowedFunction(StateMachine storage self, bytes4 selector) public constant returns(bool) {
-        return self.states[self.currentStateId].allowedFunctions[selector];
+    function checkAllowedFunction(StateMachine storage stateMachine, bytes4 selector) public constant returns(bool) {
+        return stateMachine.states[stateMachine.currentStateId].allowedFunctions[selector];
     }
 
     /// @dev Allow a function in the given state.
     /// @param stateId The id of the state
     /// @param selector A function selector (bytes4[keccak256(functionSignature)])
-    function allowFunction(StateMachine storage self, bytes32 stateId, bytes4 selector) public {
-        require(self.validState[stateId]);
-        self.states[stateId].allowedFunctions[selector] = true;
+    function allowFunction(StateMachine storage stateMachine, bytes32 stateId, bytes4 selector) public {
+        require(stateMachine.validState[stateId]);
+        stateMachine.states[stateId].allowedFunctions[selector] = true;
     }
 
-    function addStartCondition(StateMachine storage self, bytes32 stateId, function(bytes32) internal returns(bool) condition) internal {
-        require(self.validState[stateId]);
-        self.states[stateId].startConditions.push(condition);
+    function addStartCondition(StateMachine storage stateMachine, bytes32 stateId, function(bytes32) internal returns(bool) condition) internal {
+        require(stateMachine.validState[stateId]);
+        stateMachine.states[stateId].startConditions.push(condition);
     }
 
-    function addCallback(StateMachine storage self, bytes32 stateId, function() internal callback) internal {
-        require(self.validState[stateId]);
-        self.states[stateId].transitionCallbacks.push(callback);
+    function addCallback(StateMachine storage stateMachine, bytes32 stateId, function() internal callback) internal {
+        require(stateMachine.validState[stateId]);
+        stateMachine.states[stateId].transitionCallbacks.push(callback);
     }
 
-    function conditionalTransitions(StateMachine storage self) public {
+    function conditionalTransitions(StateMachine storage stateMachine) public {
 
-        bytes32 nextId = self.states[self.currentStateId].nextId;
+        bytes32 nextId = stateMachine.states[stateMachine.currentStateId].nextId;
 
-        while (self.validState[nextId]) {
-            StateMachineLib.State storage next = self.states[nextId];
+        while (stateMachine.validState[nextId]) {
+            StateMachineLib.State storage next = stateMachine.states[nextId];
             // If one of the next state's condition is true, go to next state and continue
             bool stateChanged = false;
             for (uint256 i = 0; i < next.startConditions.length; i++) {
                 if (next.startConditions[i](nextId)) {
-                    goToNextState(self);
+                    goToNextState(stateMachine);
                     nextId = next.nextId;
                     stateChanged = true;
                     break;
