@@ -13,7 +13,7 @@ library StateMachineLib {
         // The identifiers for the available functions in each state
         mapping(bytes4 => bool) allowedFunctions;
 
-        function() internal[] transitionCallbacks;
+        TransitionCallback transitionCallbacks;
         function(bytes32) internal returns(bool)[] startConditions;
     }
 
@@ -26,6 +26,11 @@ library StateMachineLib {
 
         // Maps state ids to their State structs
         mapping(bytes32 => State) states;
+    }
+
+    struct TransitionCallback {
+        address previousCallback;
+        function() internal callbackFunction;
     }
 
     /// @dev Creates and sets the initial state. It has to be called before creating any transitions.
@@ -77,9 +82,7 @@ library StateMachineLib {
 
         State storage nextState = stateMachine.states[nextStateId];
 
-        for (uint256 i = 0; i < nextState.transitionCallbacks.length; i++) {
-            nextState.transitionCallbacks[i]();
-        }
+        applyCallbacks(nextState.transitionCallbacks);
 
         LogTransition(nextStateId, block.number);
     }
@@ -112,7 +115,14 @@ library StateMachineLib {
     ///@param callback The callback function to add (if the state is valid)
     function addCallback(StateMachine storage stateMachine, bytes32 stateId, function() internal callback) internal {
         require(stateMachine.validState[stateId]);
-        stateMachine.states[stateId].transitionCallbacks.push(callback);
+        TransitionCallback storage previousCallback = stateMachine.states[stateId].transitionCallbacks;
+        stateMachine.states[stateId].transitionCallbacks = TransitionCallback(previousCallback.address, callback);
+    }
+
+    function applyCallbacks(TransitionCallback transitionCallback) internal {
+        if (transitionCallback.previousCallback != 0) {
+            applyCallbacks(transitionCallback.previousCallback);
+        }
     }
 
     ///@dev transitions the state machine into the state it should currently be in
