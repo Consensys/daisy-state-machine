@@ -109,8 +109,9 @@ contract('StateMachine', accounts => {
     assert.equal(web3.toUtf8(currentState), state0);
 
     await stateMachine.setDummyCondition(state1);
+    //THIS LINE THROWS THE ERROR
     await stateMachine.conditionalTransitions();
-
+    
     currentState = await stateMachine.getCurrentStateId.call();
     assert.equal(web3.toUtf8(currentState), state1);
 
@@ -139,7 +140,7 @@ contract('StateMachine', accounts => {
     await stateMachine.setDummyCallback(state1);
     callbackCalled = await stateMachine.callbackCalled.call();
     assert.isFalse(callbackCalled);
-
+    //THIS LINE THROWS THE ERROR
     await stateMachine.goToNextStateHelper();
     callbackCalled = await stateMachine.callbackCalled.call();
     assert.isTrue(callbackCalled);

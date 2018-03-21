@@ -85,7 +85,7 @@ library StateMachineLib {
     }
 
     /// @dev Checks if the a function is allowed in the current state.
-    /// @param selector A function selector (bytes4[keccak256(functionSignature)])
+    /// @param functionSelector A function selector (bytes4[keccak256(functionSignature)])
     /// @return true If the function is allowed in the current state
     function checkAllowedFunction(StateMachine storage stateMachine, bytes4 functionSelector) public constant returns(bool) {
         return stateMachine.states[stateMachine.currentStateId].allowedFunctions[functionSelector];
@@ -93,7 +93,7 @@ library StateMachineLib {
 
     /// @dev Allow a function in the given state.
     /// @param stateId The id of the state
-    /// @param selector A function selector (bytes4[keccak256(functionSignature)])
+    /// @param functionSelector A function selector (bytes4[keccak256(functionSignature)])
     function allowFunction(StateMachine storage stateMachine, bytes32 stateId, bytes4 functionSelector) public {
         require(stateMachine.validState[stateId]);
         stateMachine.states[stateId].allowedFunctions[functionSelector] = true;
