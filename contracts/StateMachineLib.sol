@@ -13,8 +13,8 @@ library StateMachineLib {
         // The identifiers for the available functions in each state
         mapping(bytes4 => bool) allowedFunctions;
 
-        TransitionCallback transitionCallbacks;
-        function(bytes32) internal returns(bool)[] startConditions;
+        uint256 firstTransitionCallback;
+        uint256 firstStartConditions;
     }
 
     struct StateMachine {
@@ -26,11 +26,22 @@ library StateMachineLib {
 
         // Maps state ids to their State structs
         mapping(bytes32 => State) states;
+
+        uint256 numberOfCallbacks;
+        mapping(uint256 => TransitionCallback) transitionCallbacks;
+
+        uint256 numberOfStartConditions;
+        mapping(uint256 => StartCondition) startConditions;
     }
 
     struct TransitionCallback {
-        address previousCallback;
+        uint256 nextCallback;
         function() internal callbackFunction;
+    }
+
+    struct StartCondition {
+        uint256 nextCondition;
+        function(bytes32) internal returns(bool) startConditionFunction;
     }
 
     /// @dev Creates and sets the initial state. It has to be called before creating any transitions.
@@ -82,7 +93,7 @@ library StateMachineLib {
 
         State storage nextState = stateMachine.states[nextStateId];
 
-        applyCallbacks(nextState.transitionCallbacks);
+        applyCallbacks(stateMachine, nextState.firstTransitionCallback);
 
         LogTransition(nextStateId, block.number);
     }
@@ -107,7 +118,11 @@ library StateMachineLib {
     ///@param condition Start condition function - returns true if a start condition (for a given state ID) is met
     function addStartCondition(StateMachine storage stateMachine, bytes32 stateId, function(bytes32) internal returns(bool) condition) internal {
         require(stateMachine.validState[stateId]);
-        stateMachine.states[stateId].startConditions.push(condition);
+        uint256 previousFirstCondition = stateMachine.states[stateId].firstStartConditions;
+        stateMachine.numberOfStartConditions++;
+        stateMachine.states[stateId].firstStartConditions = stateMachine.numberOfStartConditions;
+        stateMachine.startConditions[stateMachine.numberOfStartConditions] = StartCondition(previousFirstCondition, condition);
+   
     }
 
     ///@dev add a callback function for a state
@@ -115,14 +130,19 @@ library StateMachineLib {
     ///@param callback The callback function to add (if the state is valid)
     function addCallback(StateMachine storage stateMachine, bytes32 stateId, function() internal callback) internal {
         require(stateMachine.validState[stateId]);
-        TransitionCallback storage previousCallback = stateMachine.states[stateId].transitionCallbacks;
-        stateMachine.states[stateId].transitionCallbacks = TransitionCallback(previousCallback.address, callback);
+        uint256 previousFirstCallback = stateMachine.states[stateId].firstTransitionCallback;
+        stateMachine.numberOfCallbacks++;
+        stateMachine.states[stateId].firstTransitionCallback = stateMachine.numberOfCallbacks;
+        stateMachine.transitionCallbacks[stateMachine.numberOfCallbacks] = TransitionCallback(previousFirstCallback, callback);
     }
 
-    function applyCallbacks(TransitionCallback transitionCallback) internal {
-        if (transitionCallback.previousCallback != 0) {
-            applyCallbacks(transitionCallback.previousCallback);
+    function applyCallbacks(StateMachine storage stateMachine, uint256 transitionCallback) internal {
+        function() internal thisCallback = stateMachine.transitionCallbacks[transitionCallback].callbackFunction;
+        uint256 nextCallback = stateMachine.transitionCallbacks[transitionCallback].nextCallback;
+        if (nextCallback != 0) {
+            applyCallbacks(stateMachine, nextCallback);
         }
+        thisCallback();
     }
 
     ///@dev transitions the state machine into the state it should currently be in
