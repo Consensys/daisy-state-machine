@@ -6,7 +6,8 @@ import "./StateMachine.sol";
 /// @title A contract that implements the state machine pattern and adds time dependant transitions.
 contract TimedStateMachine is StateMachine {
 
-    event LogSetStateStartTime(bytes32 indexed stateId, uint256 startTime);
+    event LogSetStateStartTime(bytes32 indexed _stateId, uint256 _startTime);
+    event LogChangeStateStartTime(bytes32 indexed _stateId, uint256 _startTime);
 
     // Stores the start timestamp for each state (the value is 0 if the state doesn't have a start timestamp).
     mapping(bytes32 => uint256) internal startTime;
@@ -14,29 +15,32 @@ contract TimedStateMachine is StateMachine {
     /// @dev Sets the starting timestamp for a state.
     /// @param stateId The id of the state for which we want to set the start timestamp.
     /// @param timestamp The start timestamp for the given state. It should be bigger than the current one.
-    function setStateStartTime(bytes32 stateId, uint256 timestamp) internal {
-        require(block.timestamp < timestamp);
-        require(startTime[stateId] == 0);
-        startTime[stateId] = timestamp;
-        stateMachine.addStartCondition(stateId, hasStartTimePassed);
+    function setStateStartTime(bytes32 _stateId, uint256 _timestamp) internal {
+        require(block.timestamp < _timestamp);
+        require(startTime[_stateId] == 0);
+        startTime[_stateId] = _timestamp;
+        stateMachine.addStartCondition(_stateId, hasStartTimePassed);
 
-        LogSetStateStartTime(stateId, timestamp);
+        emit LogSetStateStartTime(_stateId, _timestamp);
     }
 
-    function changeStateStartTime(bytes32 stateId, uint256 timestamp) internal {
-        require(block.timestamp < timestamp);
-        require(startTime[stateId] != 0);
-        startTime[stateId] = timestamp;
+    function changeStateStartTime(bytes32 _stateId, uint256 _timestamp) internal {
+        require(block.timestamp < _timestamp);
+        require(startTime[_stateId] != 0);
+        startTime[_stateId] = _timestamp;
+
+        emit LogChangeStateStartTime(_stateId, _timestamp);
+
     }
 
     /// @dev Returns the timestamp for the given state id.
     /// @param stateId The id of the state for which we want to set the start timestamp.
-    function getStateStartTime(bytes32 stateId) public view returns(uint256) {
-        return startTime[stateId];
+    function getStateStartTime(bytes32 _stateId) public view returns(uint256) {
+        return startTime[_stateId];
     }
 
-    function hasStartTimePassed(bytes32 stateId) internal returns(bool) {
-        return startTime[stateId] <= block.timestamp;
+    function hasStartTimePassed(bytes32 _stateId) internal returns(bool) {
+        return startTime[_stateId] <= block.timestamp;
     }
 
 }
