@@ -80,7 +80,6 @@ library StateMachineLib {
         }
              
         emit LogTransition(_nextStateId, block.number);
-        }
     }
 
     /// @dev Checks if a function is allowed in the current state.
