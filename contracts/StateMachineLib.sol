@@ -9,6 +9,7 @@ library StateMachineLib {
     struct State {
         // The id of the next state
         bytes32[] nextStateIds;
+        mapping(bytes32 => bool) nextStates;
 
         // The identifiers for the available functions in each state
         mapping(bytes4 => bool) allowedFunctions;
@@ -36,7 +37,8 @@ library StateMachineLib {
         _stateMachine.currentStateId = _stateId;
     }
 
-    /// @dev Creates a transition from 'fromId' to 'toId'. If fromId already had a nextStateId, it deletes the now unreachable state.
+    /// @dev Creates a transition from 'fromId' to 'toId'.
+    /// @dev this overloaded by the following function
     /// @param fromId The id of the state from which the transition begins.
     /// @param toId The id of the state that will be reachable from "fromId".
     function createTransition(StateMachine storage _stateMachine, bytes32 _fromId, bytes32 _toId) public {
@@ -44,37 +46,40 @@ library StateMachineLib {
 
         State storage from = _stateMachine.states[_fromId];
         _stateMachine.validState[_toId] = true;
+        from.nextStates[_toId] = true;
         from.nextStateIds.push(_toId);
     }
 
-    /// @dev Creates the given states.
-    /// @param stateIds Array of state ids.
-    function setStates(StateMachine storage _stateMachine, bytes32[] stateIds) public {
-        require(stateIds.length > 0);
 
-        setInitialState(_stateMachine, stateIds[0]);
+    /// @dev Creates a transition from 'fromId' to each of the elements in 'toIds'.
+    /// @dev this overloads the function above this
+    /// @param fromId The id of the state from which the transition begins.
+    /// @param toId The id of the state that will be reachable from "fromId".
+    function createTransition(StateMachine storage _stateMachine, bytes32 _fromId, bytes32[] _toIds) public {
+        require(_toIds.length > 0);
+        require(_stateMachine.validState[_fromId]);
 
-        for (uint256 i = 1; i < stateIds.length; i++) {
-            createTransition(_stateMachine, stateIds[i - 1], stateIds[i]);
+        State storage from = _stateMachine.states[_fromId];
+        for (uint256 i = 0; i < _toIds.length; i++) {
+            _stateMachine.validState[_toIds[i]] = true;
+            from.nextStates[_toIds[i]] = true;
+            from.nextStateIds.push(_toIds[i]);
         }
     }
 
+
     /// @dev Goes to the next state if posible (if the next state is valid)
     function goToNextState(StateMachine storage _stateMachine, bytes32 _nextStateId) internal {
-        State storage currentState = _stateMachine.states[_stateMachine.currentStateId];
         require(_stateMachine.validState[_nextStateId]);
-
-        for (uint256 i = 0; i < currentState.nextStateIds.length; i++) {
-            if (currentState.nextStateIds[i] == _nextStateId) {
-                _stateMachine.currentStateId = _nextStateId;
-                State storage nextState = _stateMachine.states[_nextStateId];
-                for (uint256 j = 0; j < nextState.transitionCallbacks.length; j++) {
-                    nextState.transitionCallbacks[j]();
-                }
-                
-                emit LogTransition(_nextStateId, block.number);
-                break;
-            }
+        require(_stateMachine.states[_stateMachine.currentStateId].nextStates[_nextStateId]);
+            
+        _stateMachine.currentStateId = _nextStateId;
+        function() internal[] storage transitionCallbacks = _stateMachine.states[_nextStateId].transitionCallbacks;
+        for (uint256 j = 0; j < transitionCallbacks.length; j++) {
+            transitionCallbacks[j]();
+        }
+             
+        emit LogTransition(_nextStateId, block.number);
         }
     }
 
