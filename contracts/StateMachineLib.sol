@@ -68,6 +68,7 @@ library StateMachineLib {
 
     /// @dev Goes to the next state if posible (if the next state is valid)
     function goToNextState(StateMachine storage stateMachine) internal {
+        require(stateMachine.validState[stateMachine.currentStateId]);
         State storage currentState = stateMachine.states[stateMachine.currentStateId];
 
         bytes32 nextStateId = currentState.nextStateId;
@@ -88,6 +89,7 @@ library StateMachineLib {
     /// @param functionSelector A function selector (bytes4[keccak256(functionSignature)])
     /// @return true If the function is allowed in the current state
     function checkAllowedFunction(StateMachine storage stateMachine, bytes4 functionSelector) public constant returns(bool) {
+        require(stateMachine.validState[stateMachine.currentStateId]);
         return stateMachine.states[stateMachine.currentStateId].allowedFunctions[functionSelector];
     }
 
