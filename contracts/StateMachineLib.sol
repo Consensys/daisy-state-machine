@@ -67,7 +67,7 @@ library StateMachineLib {
     }
 
     /// @dev Goes to the next state if posible (if the next state is valid)
-    function goToNextState(StateMachine storage stateMachine) public {
+    function goToNextState(StateMachine storage stateMachine) internal {
         State storage currentState = stateMachine.states[stateMachine.currentStateId];
 
         bytes32 nextStateId = currentState.nextStateId;
@@ -117,7 +117,7 @@ library StateMachineLib {
 
     ///@dev transitions the state machine into the state it should currently be in
     ///@dev by taking into account the current conditions and how many further transitions can occur 
-    function conditionalTransitions(StateMachine storage stateMachine) public {
+    function conditionalTransitions(StateMachine storage stateMachine) internal {
 
         bytes32 nextStateId = stateMachine.states[stateMachine.currentStateId].nextStateId;
 
