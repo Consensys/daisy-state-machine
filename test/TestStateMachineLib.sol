@@ -23,18 +23,31 @@ contract TestStateMachineLib {
     StateMachineLib.StateMachine stateMachine;
 
     mapping(bytes32 => bool) dummyCallbackCalled;
-    function dummyCallback(bytes32 state) internal { 
-        dummyCallbackCalled[state] = true; 
+
+    function dummyCallback1() internal { 
+        dummyCallbackCalled[STATE1] = true; 
+    }
+
+    function dummyCallback2() internal { 
+        dummyCallbackCalled[STATE2] = true; 
+    }
+
+    function dummyCallback3() internal { 
+        dummyCallbackCalled[STATE3] = true; 
+    }
+
+    function dummyCallback4() internal { 
+        dummyCallbackCalled[STATE4] = true; 
     }
 
     function dummy() public pure {}
 
     function beforeEach() public {
 
-        stateMachine = StateMachineLib.StateMachine(0, dummyCallback);
+        stateMachine = StateMachineLib.StateMachine(0);
         stateMachine.setStates(states);
 
-        // dummyCallbackCalled[STATE1] = false;
+        dummyCallbackCalled[STATE1] = false;
         dummyCallbackCalled[STATE2] = false;
         dummyCallbackCalled[STATE3] = false;
         dummyCallbackCalled[STATE4] = false;
@@ -86,17 +99,19 @@ contract TestStateMachineLib {
     }
 
     function testStateCallbacksShouldBeCalled() public {
-        // Assert.isTrue(stateMachine.getState(STATE4).hasCallback, "setCallback should have set the 'hasCallback' bool of STATE4 to true");
 
         Assert.isFalse(dummyCallbackCalled[STATE2], "dummyCallback should not have been called before STATE2");
+        stateMachine.addCallback(STATE2,dummyCallback2);
         stateMachine.goToNextState();
         Assert.isTrue(dummyCallbackCalled[STATE2], "dummyCallback should have been called when entering STATE2");
 
         Assert.isFalse(dummyCallbackCalled[STATE3], "dummyCallback should not have been called before STATE3");
+        stateMachine.addCallback(STATE3,dummyCallback3);
         stateMachine.goToNextState();
         Assert.isTrue(dummyCallbackCalled[STATE3], "dummyCallback should have been called when entering STATE3");
 
         Assert.isFalse(dummyCallbackCalled[STATE4], "dummyCallback should not have been called before STATE4");
+        stateMachine.addCallback(STATE4,dummyCallback4);
         stateMachine.goToNextState();
         Assert.isTrue(dummyCallbackCalled[STATE4], "dummyCallback should have been called when entering STATE4");
     }
