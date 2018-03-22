@@ -61,9 +61,7 @@ library StateMachineLib {
 
         State storage from = _stateMachine.states[_fromId];
         for (uint256 i = 0; i < _toIds.length; i++) {
-            _stateMachine.validState[_toIds[i]] = true;
-            from.nextStates[_toIds[i]] = true;
-            from.nextStateIds.push(_toIds[i]);
+            createTransition(_stateMachine, _fromId, _toIds[i]);
         }
     }
 
@@ -79,7 +77,7 @@ library StateMachineLib {
             transitionCallbacks[j]();
         }
              
-        emit LogTransition(_nextStateId, block.number);
+        LogTransition(_nextStateId, block.number);
     }
 
     /// @dev Checks if a function is allowed in the current state.

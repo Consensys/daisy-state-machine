@@ -5,14 +5,16 @@ import "../../contracts/TimedStateMachine.sol";
 
 contract TimedStateMachineMock is TimedStateMachine {
     bytes32 public constant STATE0 = "STATE0";
-    bytes32 public constant STATE1 = "STATE1";
+    bytes32 public constant STATE1A = "STATE1A";
+    bytes32 public constant STATE1B = "STATE1B";
     bytes32 public constant STATE2 = "STATE2";
     bytes32 public constant STATE3 = "STATE3";
 
     function TimedStateMachineMock() public { 
         stateMachine.setInitialState(STATE0);
-        stateMachine.createTransition(STATE0, STATE1);
-        stateMachine.createTransition(STATE1, STATE2);
+        stateMachine.createTransition(STATE0, [STATE1A, STATE1B]);
+        stateMachine.createTransition(STATE1A, STATE2);
+        stateMachine.createTransition(STATE1B, STATE2);
         stateMachine.createTransition(STATE2, STATE3);
     }
 

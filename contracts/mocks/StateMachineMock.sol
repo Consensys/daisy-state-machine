@@ -12,10 +12,6 @@ contract StateMachineMock is StateMachine {
     function StateMachineMock() public { 
     }
 
-    function setStatesHelper(bytes32[] _states) public {
-        stateMachine.setStates(_states);
-    }
-
     function dummyFunction() public checkAllowed {
     }
 
@@ -31,14 +27,24 @@ contract StateMachineMock is StateMachine {
         callbackCalled = true;
     }
 
+    // Helper to set the initial state
+    function setInitialStateHelper(bytes32 _stateId) public {
+        stateMachine.setInitialState(_stateId);
+    }
+
     // Helper to test creating transitions
-    function createTransition(bytes32 fromId, bytes32 toId) public {
-        stateMachine.createTransition(fromId, toId);
+    function createTransitionHelper(bytes32 _fromId, bytes32 _toId) public {
+        stateMachine.createTransition(_fromId, _toId);
+    }
+
+    // Helper to test creating transitions
+    function createTransitionArrayHelper(bytes32 _fromId, bytes32[] _toIds) public {
+        stateMachine.createTransition(_fromId, _toIds);
     }
 
     // Helper to test going to next state
-    function goToNextStateHelper() public {
-        stateMachine.goToNextState();
+    function goToNextStateHelper(bytes32 _nextStateId) public {
+        stateMachine.goToNextState(_nextStateId);
     }
 
     // Sets the dummy condition for a state

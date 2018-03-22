@@ -21,7 +21,7 @@ contract TimedStateMachine is StateMachine {
         startTime[_stateId] = _timestamp;
         stateMachine.addStartCondition(_stateId, hasStartTimePassed);
 
-        emit LogSetStateStartTime(_stateId, _timestamp);
+        LogSetStateStartTime(_stateId, _timestamp);
     }
 
     function changeStateStartTime(bytes32 _stateId, uint256 _timestamp) internal {
@@ -29,7 +29,7 @@ contract TimedStateMachine is StateMachine {
         require(startTime[_stateId] != 0);
         startTime[_stateId] = _timestamp;
 
-        emit LogChangeStateStartTime(_stateId, _timestamp);
+        LogChangeStateStartTime(_stateId, _timestamp);
 
     }
 
