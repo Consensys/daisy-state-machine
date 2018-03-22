@@ -132,9 +132,10 @@ library StateMachineLib {
                         break;
                     }
                 }
-                // If none of the next state's conditions are met, then we are in the right current state
+                // If we have changed state, we need to break out and start again for the next state
                 if (stateChanged) break;
             }
+            //If we've tried all the possible following states and not changed, we're in the right state now
             if (!stateChanged) break;
         }
     }
