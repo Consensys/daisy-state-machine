@@ -114,21 +114,27 @@ library StateMachineLib {
     ///@dev by taking into account the current conditions and how many further transitions can occur 
     function conditionalTransitions(StateMachine storage _stateMachine) internal {
 
-        bytes32[] nextStateIds = _stateMachine.states[_stateMachine.currentStateId].nextStateIds;
+        bytes32[] storage nextStateIds = _stateMachine.states[_stateMachine.currentStateId].nextStateIds;
 
-        while (_stateMachine.validState[nextStateId]) {
-            StateMachineLib.State storage nextState = _stateMachine.states[nextStateId];
-            // If one of the next state's conditions is met, go to this state and continue
+        while (nextStateIds.length > 0) {
             bool stateChanged = false;
-            for (uint256 i = 0; i < nextState.startConditions.length; i++) {
-                if (nextState.startConditions[i](nextStateId)) {
-                    goToNextState(_stateMachine);
-                    nextStateId = nextState.nextStateId;
-                    stateChanged = true;
-                    break;
+            //consider each of the next states in turn
+            for (uint256 j = 0; j < nextStateIds.length; j++) {
+                //Get the state that you are now to consider
+                bytes32 nextStateId = nextStateIds[j];
+                StateMachineLib.State storage nextState = _stateMachine.states[nextStateId];
+                // If one of this state's start conditions is met, go to this state and continue
+                for (uint256 i = 0; i < nextState.startConditions.length; i++) {
+                    if (nextState.startConditions[i](nextStateId)) {
+                        goToNextState(_stateMachine,nextStateId);
+                        nextStateIds = nextState.nextStateIds;
+                        stateChanged = true;
+                        break;
+                    }
                 }
+                // If none of the next state's conditions are met, then we are in the right current state
+                if (stateChanged) break;
             }
-            // If none of the next state's conditions are met, then we are in the right current state
             if (!stateChanged) break;
         }
     }
