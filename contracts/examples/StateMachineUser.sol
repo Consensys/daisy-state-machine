@@ -5,11 +5,12 @@ import "../TimedStateMachine.sol";
 
 contract StateMachineUser is TimedStateMachine {
 
-    bytes32 constant STATE1 = "state1";
-    bytes32 constant STATE2 = "state2";
-    bytes32 constant STATE3 = "state3";
-    bytes32 constant STATE4 = "state4";
-    bytes32[] states = [STATE1, STATE2, STATE3, STATE4];
+    bytes32 constant STATE0 = "STATE0";
+    bytes32 constant STATE1A = "STATE1A";
+    bytes32 constant STATE1B = "STATE1B";
+    bytes32 constant STATE2 = "STATE2";
+    bytes32 constant STATE3 = "STATE3";
+    bytes32 constant STATE4 = "STATE4";
 
     function StateMachineUser() public {
         setupStates();
@@ -31,13 +32,18 @@ contract StateMachineUser is TimedStateMachine {
     }
 
     function setupStates() internal {
-        stateMachine.setStates(states);
+        stateMachine.setInitialState(STATE0);
+        stateMachine.createTransition(STATE0, STATE1A);
+        stateMachine.createTransition(STATE0, STATE1B);
+        stateMachine.createTransition(STATE1A, STATE2);
+        stateMachine.createTransition(STATE1B, STATE2);
+        stateMachine.createTransition(STATE2, STATE3);
 
-        stateMachine.allowFunction(STATE1, this.foo.selector);
+        stateMachine.allowFunction(STATE1A, this.foo.selector);
         stateMachine.allowFunction(STATE2, this.bar.selector);
         stateMachine.allowFunction(STATE3, 0); // Allow fallback function
 
-        stateMachine.addCallback(STATE1, onState1);
+        stateMachine.addCallback(STATE1A, onState1A);
         stateMachine.addCallback(STATE2, onState2);
         stateMachine.addCallback(STATE3, onState3);
 
@@ -48,7 +54,7 @@ contract StateMachineUser is TimedStateMachine {
     }
 
     // Callback when entering each state
-    function onState1() internal { /* Do something */ }
+    function onState1A() internal { /* Do something */ }
     function onState2() internal { /* Do something */ }
     function onState3() internal { /* Do something */ }
 

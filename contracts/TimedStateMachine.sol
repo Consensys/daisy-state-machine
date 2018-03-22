@@ -13,8 +13,8 @@ contract TimedStateMachine is StateMachine {
     mapping(bytes32 => uint256) internal startTime;
 
     /// @dev Sets the starting timestamp for a state.
-    /// @param stateId The id of the state for which we want to set the start timestamp.
-    /// @param timestamp The start timestamp for the given state. It should be bigger than the current one.
+    /// @param _stateId The id of the state for which we want to set the start timestamp.
+    /// @param _timestamp The start timestamp for the given state. It should be bigger than the current one.
     function setStateStartTime(bytes32 _stateId, uint256 _timestamp) internal {
         require(block.timestamp < _timestamp);
         require(startTime[_stateId] == 0);
@@ -34,7 +34,7 @@ contract TimedStateMachine is StateMachine {
     }
 
     /// @dev Returns the timestamp for the given state id.
-    /// @param stateId The id of the state for which we want to set the start timestamp.
+    /// @param _stateId The id of the state for which we want to set the start timestamp.
     function getStateStartTime(bytes32 _stateId) public view returns(uint256) {
         return startTime[_stateId];
     }

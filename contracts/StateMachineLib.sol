@@ -30,7 +30,7 @@ library StateMachineLib {
     }
 
     /// @dev Creates and sets the initial state. It has to be called before creating any transitions.
-    /// @param stateId The id of the (new) state to set as initial state.
+    /// @param _stateId The id of the (new) state to set as initial state.
     function setInitialState(StateMachine storage _stateMachine, bytes32 _stateId) public {
         require(_stateMachine.currentStateId == 0);
         _stateMachine.validState[_stateId] = true;
@@ -39,8 +39,8 @@ library StateMachineLib {
 
     /// @dev Creates a transition from 'fromId' to 'toId'.
     /// @dev this overloaded by the following function
-    /// @param fromId The id of the state from which the transition begins.
-    /// @param toId The id of the state that will be reachable from "fromId".
+    /// @param _fromId The id of the state from which the transition begins.
+    /// @param _toId The id of the state that will be reachable from "fromId".
     function createTransition(StateMachine storage _stateMachine, bytes32 _fromId, bytes32 _toId) public {
         require(_stateMachine.validState[_fromId]);
 
@@ -53,8 +53,8 @@ library StateMachineLib {
 
     /// @dev Creates a transition from 'fromId' to each of the elements in 'toIds'.
     /// @dev this overloads the function above this
-    /// @param fromId The id of the state from which the transition begins.
-    /// @param toId The id of the state that will be reachable from "fromId".
+    /// @param _fromId The id of the state from which the transition begins.
+    /// @param _toIds The id of the state that will be reachable from "fromId".
     function createTransition(StateMachine storage _stateMachine, bytes32 _fromId, bytes32[] _toIds) public {
         require(_toIds.length > 0);
         require(_stateMachine.validState[_fromId]);
@@ -67,6 +67,7 @@ library StateMachineLib {
 
 
     /// @dev Goes to the next state if posible (if the next state is valid)
+    /// @param _nextStateId dfsdf
     function goToNextState(StateMachine storage _stateMachine, bytes32 _nextStateId) internal {
         require(_stateMachine.validState[_nextStateId]);
         require(_stateMachine.states[_stateMachine.currentStateId].nextStates[_nextStateId]);
@@ -81,7 +82,7 @@ library StateMachineLib {
     }
 
     /// @dev Checks if a function is allowed in the current state.
-    /// @param functionSelector A function selector (bytes4[keccak256(functionSignature)])
+    /// @param _functionSelector A function selector (bytes4[keccak256(functionSignature)])
     /// @return true If the function is allowed in the current state
     function checkAllowedFunction(StateMachine storage _stateMachine, bytes4 _functionSelector) public constant returns(bool) {
         require (_stateMachine.validState[_stateMachine.currentStateId]);
@@ -89,24 +90,24 @@ library StateMachineLib {
     }
 
     /// @dev Allow a function in the given state.
-    /// @param stateId The id of the state
-    /// @param functionSelector A function selector (bytes4[keccak256(functionSignature)])
+    /// @param _stateId The id of the state
+    /// @param _functionSelector A function selector (bytes4[keccak256(functionSignature)])
     function allowFunction(StateMachine storage _stateMachine, bytes32 _stateId, bytes4 _functionSelector) public {
         require(_stateMachine.validState[_stateId]);
         _stateMachine.states[_stateId].allowedFunctions[_functionSelector] = true;
     }
 
     ///@dev add a function returning a boolean as a start condition for a state
-    ///@param stateId The ID of the state to add the condition for
-    ///@param condition Start condition function - returns true if a start condition (for a given state ID) is met
+    ///@param _stateId The ID of the state to add the condition for
+    ///@param _condition Start condition function - returns true if a start condition (for a given state ID) is met
     function addStartCondition(StateMachine storage _stateMachine, bytes32 _stateId, function(bytes32) internal returns(bool) _condition) internal {
         require(_stateMachine.validState[_stateId]);
         _stateMachine.states[_stateId].startConditions.push(_condition);
     }
 
     ///@dev add a callback function for a state
-    ///@param stateId The ID of the state to add a callback function for
-    ///@param callback The callback function to add (if the state is valid)
+    ///@param _stateId The ID of the state to add a callback function for
+    ///@param _callback The callback function to add (if the state is valid)
     function addCallback(StateMachine storage _stateMachine, bytes32 _stateId, function() internal _callback) internal {
         require(_stateMachine.validState[_stateId]);
         _stateMachine.states[_stateId].transitionCallbacks.push(_callback);

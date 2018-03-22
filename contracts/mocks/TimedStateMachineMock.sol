@@ -12,7 +12,8 @@ contract TimedStateMachineMock is TimedStateMachine {
 
     function TimedStateMachineMock() public { 
         stateMachine.setInitialState(STATE0);
-        stateMachine.createTransition(STATE0, [STATE1A, STATE1B]);
+        stateMachine.createTransition(STATE0, STATE1A);
+        stateMachine.createTransition(STATE0, STATE1B);
         stateMachine.createTransition(STATE1A, STATE2);
         stateMachine.createTransition(STATE1B, STATE2);
         stateMachine.createTransition(STATE2, STATE3);

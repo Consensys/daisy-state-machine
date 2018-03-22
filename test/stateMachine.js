@@ -172,7 +172,7 @@ contract('StateMachine', accounts => {
     callbackCalled = await stateMachine.callbackCalled.call();
     assert.isFalse(callbackCalled);
 
-    await stateMachine.setDummyCallback(state1);
+    await stateMachine.setDummyCallback(state1a);
     callbackCalled = await stateMachine.callbackCalled.call();
     assert.isFalse(callbackCalled);
 
