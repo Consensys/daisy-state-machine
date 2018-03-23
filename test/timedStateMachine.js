@@ -8,10 +8,11 @@ const TimedStateMachineMock = artifacts.require('TimedStateMachineMock');
 contract('TimedStateMachine', accounts => {
   let timedStateMachine;
   let invalidState = 'invalid';
-  let state0 = 'STATE0';
-  let state1 = 'STATE1';
-  let state2 = 'STATE2';
-  let state3 = 'STATE3';
+  const state0 = 'STATE0';
+  const state1a = 'STATE1A';
+  const state1b = 'STATE1B';
+  const state2 = 'STATE2';
+  const state3 = 'STATE3';
 
   beforeEach(async () => {
     const stateMachineLib = await StateMachineLib.new();

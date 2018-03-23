@@ -8,15 +8,14 @@ import "../contracts/StateMachineLib.sol";
 contract TestStateMachineLib {
     using StateMachineLib for StateMachineLib.StateMachine;
 
-    bytes32 constant STATE1 = "state1";
+    bytes32 constant STATE0 = "state0";
+    bytes32 constant STATE1a = "state1a";
+    bytes32 constant STATE1b = "state1b";
     bytes32 constant STATE2 = "state2";
     bytes32 constant STATE3 = "state3";
-    bytes32 constant STATE4 = "state4";
-
-    bytes32[] states = [STATE1, STATE2, STATE3, STATE4];
 
     // States that will override existing states
-    bytes32 constant STATEOVERRIDE1 = "override1";
+    bytes32 constant STATEOVERRIDE1b = "override1b";
     bytes32 constant STATEOVERRIDE2 = "override2";
     bytes32 constant STATEOVERRIDE3 = "override3";
 
@@ -24,8 +23,12 @@ contract TestStateMachineLib {
 
     mapping(bytes32 => bool) dummyCallbackCalled;
 
-    function dummyCallback1() internal { 
-        dummyCallbackCalled[STATE1] = true; 
+    function dummyCallback1a() internal { 
+        dummyCallbackCalled[STATE1a] = true; 
+    }
+
+    function dummyCallback1b() internal { 
+        dummyCallbackCalled[STATE1b] = true; 
     }
 
     function dummyCallback2() internal { 
@@ -36,9 +39,6 @@ contract TestStateMachineLib {
         dummyCallbackCalled[STATE3] = true; 
     }
 
-    function dummyCallback4() internal { 
-        dummyCallbackCalled[STATE4] = true; 
-    }
 
     function dummy() public pure {}
 
@@ -47,20 +47,20 @@ contract TestStateMachineLib {
         stateMachine = StateMachineLib.StateMachine(0);
         stateMachine.setStates(states);
 
-        dummyCallbackCalled[STATE1] = false;
+        dummyCallbackCalled[STATE1a] = false;
+        dummyCallbackCalled[STATE1b] = false;
         dummyCallbackCalled[STATE2] = false;
         dummyCallbackCalled[STATE3] = false;
-        dummyCallbackCalled[STATE4] = false;
-        dummyCallbackCalled[STATEOVERRIDE1] = false;
+        dummyCallbackCalled[STATEOVERRIDE1b] = false;
         dummyCallbackCalled[STATEOVERRIDE2] = false;
         dummyCallbackCalled[STATEOVERRIDE3] = false;
     }
 
     function testStatesShouldBeValid() public {
-        Assert.isTrue(stateMachine.validState[STATE1], "STATE1 should be valid");
+        Assert.isTrue(stateMachine.validState[STATE1a], "STATE1a should be valid");
+        Assert.isTrue(stateMachine.validState[STATE1b], "STATE1b should be valid");
         Assert.isTrue(stateMachine.validState[STATE2], "STATE2 should be valid");
         Assert.isTrue(stateMachine.validState[STATE3], "STATE3 should be valid");
-        Assert.isTrue(stateMachine.validState[STATE4], "STATE4 should be valid");
     }
 
     function testTransitionsShouldWork() public {
