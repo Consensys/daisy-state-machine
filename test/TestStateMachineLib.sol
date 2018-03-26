@@ -4,7 +4,6 @@ import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
 import "../contracts/StateMachineLib.sol";
 
-
 contract TestStateMachineLib {
     using StateMachineLib for StateMachineLib.StateMachine;
 
@@ -68,18 +67,12 @@ contract TestStateMachineLib {
         stateMachine.goToNextState(STATE1B);
         Assert.equal(stateMachine.currentStateId, STATE1B, "StateMachine should have transitioned to STATE1B");
 
-        //stateMachine.goToNextState(STATE1A);
-        Assert.equal(stateMachine.currentStateId, STATE1B, "StateMachine should not have transitioned out of STATE1B");
-
         stateMachine.goToNextState(STATE2);
         Assert.equal(stateMachine.currentStateId, STATE2, "StateMachine should have transitioned to STATE2");
 
         stateMachine.createTransition(STATE2, ALTSTATE);
         stateMachine.goToNextState(ALTSTATE);
         Assert.equal(stateMachine.currentStateId, ALTSTATE, "StateMachine should have transitioned to ALTSTATE");
-
-        //stateMachine.goToNextState(STATE3);
-        Assert.equal(stateMachine.currentStateId, ALTSTATE, "StateMachine should not have transitioned out of ALTSTATE");
     }
 
     function testAllowedFunctions() public {
