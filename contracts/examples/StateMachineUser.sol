@@ -41,8 +41,8 @@ contract StateMachineUser is TimedStateMachine {
         stateMachine.addCallback(STATE2, onState2);
         stateMachine.addCallback(STATE3, onState3);
 
-        setStateStartTime(STATE2, now + 2 weeks);
-        setStateStartTime(STATE3, now + 3 weeks);
+        stateMachine.setStateStartTime(STATE2, now + 2 weeks);
+        stateMachine.setStateStartTime(STATE3, now + 3 weeks);
 
         stateMachine.addStartCondition(STATE4, shouldState4Start);
     }

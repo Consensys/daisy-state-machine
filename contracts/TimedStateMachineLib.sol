@@ -14,20 +14,22 @@ library TimedStateMachineLib {
     /// @dev Sets the starting timestamp for a state.
     /// @param _stateId The id of the state for which we want to set the start timestamp.
     /// @param _timestamp The start timestamp for the given state. It should be bigger than the current time.
-    function setStateStartTime(StateMachineLib.StateMachine stateMachine, bytes32 _stateId, uint256 _timestamp) public {
+    function setStateStartTime(StateMachineLib.StateMachine storage stateMachine, bytes32 _stateId, uint256 _timestamp) public {
         require(block.timestamp < _timestamp);
         require(startTime[_stateId] == 0);
 
         startTime[_stateId] = _timestamp;
-        stateMachine.addStartCondition(_stateId, hasStartTimePassed);
+
+        StateMachineLib.addStartCondition(stateMachine, _stateId, hasStartTimePassed);
         LogSetStateStartTime(_stateId, _timestamp);
 
     }
 
+
     /// @dev updates the starting timestamp for a state.
     /// @param _stateId The id of the state for which we want to change the start timestamp.
     /// @param _timestamp The new start timestamp for the given state.
-    function changeStateStartTime(StateMachineLib.StateMachine stateMachine, bytes32 _stateId, uint256 _timestamp) public {
+    function changeStateStartTime(StateMachineLib.StateMachine storage stateMachine, bytes32 _stateId, uint256 _timestamp) public {
         require(stateMachine.validState[_stateId]);
         require(startTime[_stateId] != 0);
         require(block.timestamp < _timestamp);
@@ -39,13 +41,13 @@ library TimedStateMachineLib {
 
     /// @dev Returns the timestamp for the given state id.
     /// @param _stateId The id of the state for which we want to set the start timestamp.
-    function getStateStartTime(StateMachineLib.StateMachine stateMachine, bytes32 _stateId) public view returns(uint256) {
+    function getStateStartTime(StateMachineLib.StateMachine storage stateMachine, bytes32 _stateId) public view returns(uint256) {
         return startTime[_stateId];
     }
 
     // @dev determines whether the starttime for a specific state has passed
     /// @param _stateId The state ID of the state in question
-    function hasStartTimePassed(StateMachineLib.StateMachine stateMachine, bytes32 _stateId) public returns(bool) {
+    function hasStartTimePassed(bytes32 _stateId) public returns(bool) {
         return startTime[_stateId] <= block.timestamp;
     }
 

@@ -18,6 +18,6 @@ contract TimedStateMachineMock is TimedStateMachine {
 
     // Helper to set the state start time
     function setStateStartTimeHelper(bytes32 stateId, uint256 timestamp) public {
-        setStateStartTime(stateId, timestamp);
+        stateMachine.setStateStartTime(stateId, timestamp);
     }
 }
