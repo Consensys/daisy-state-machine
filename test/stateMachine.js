@@ -151,16 +151,17 @@ contract('StateMachine', accounts => {
   });
 
   it('should transition to the first of 2 next states if both are true', async () => {
-    let currentState;
-    currentState = await stateMachine.getCurrentStateId.call();
-    assert.equal(web3.toUtf8(currentState), state0);
-
     await stateMachine.setDummyCondition(state1a);
     await stateMachine.setDummyCondition(state1b);
     await stateMachine.conditionalTransitions();
     
-    currentState = await stateMachine.getCurrentStateId.call();
+    let currentState = await stateMachine.getCurrentStateId.call();
     assert.equal(web3.toUtf8(currentState), state1a);
+  });
+
+  it('should not transition to to a state if the transition is removed', async () => {
+    await stateMachine.setDummyCondition(state1a);
+
   });
 
   it('should not be possible to set a callback for an invalid state', async () => {

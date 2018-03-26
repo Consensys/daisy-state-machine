@@ -59,13 +59,12 @@ library StateMachineLib {
         require(_toIds.length > 0);
         require(_stateMachine.validState[_fromId]);
 
-        State storage from = _stateMachine.states[_fromId];
         for (uint256 i = 0; i < _toIds.length; i++) {
             createTransition(_stateMachine, _fromId, _toIds[i]);
         }
     }
 
-
+    
     /// @dev Goes to the next state if posible (if the next state is valid)
     /// @param _nextStateId dfsdf
     function goToNextState(StateMachine storage _stateMachine, bytes32 _nextStateId) internal {

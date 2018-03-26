@@ -29,7 +29,7 @@ contract('TimedStateMachine', accounts => {
   it('should not be possible to set a start time lower than the current one', async () => {
     const timestamp = (await latestTime()) - duration.weeks(1);
     await expectThrow(timedStateMachine.setStateStartTimeHelper(state0, timestamp));
-    await expectThrow(timedStateMachine.setStateStartTimeHelper(state1, timestamp));
+    await expectThrow(timedStateMachine.setStateStartTimeHelper(state1a, timestamp));
     await expectThrow(timedStateMachine.setStateStartTimeHelper(state2, timestamp));
     await expectThrow(timedStateMachine.setStateStartTimeHelper(state3, timestamp));
   });
@@ -37,9 +37,9 @@ contract('TimedStateMachine', accounts => {
   it('should be possible to set a start time', async () => {
     const timestamp = (await latestTime()) + duration.weeks(1);
 
-    await timedStateMachine.setStateStartTimeHelper(state1, timestamp);
+    await timedStateMachine.setStateStartTimeHelper(state1a, timestamp);
 
-    const _timestamp = await timedStateMachine.getStateStartTime.call(state1);
+    const _timestamp = await timedStateMachine.getStateStartTime.call(state1a);
 
     assert.equal(timestamp, _timestamp);
 
@@ -48,7 +48,7 @@ contract('TimedStateMachine', accounts => {
   it('should transition to the next state if the set timestamp is reached', async () => {
     const timestamp = (await latestTime()) + duration.weeks(1);
 
-    await timedStateMachine.setStateStartTimeHelper(state1, timestamp);
+    await timedStateMachine.setStateStartTimeHelper(state1a, timestamp);
 
     await increaseTime(duration.weeks(2));
 
@@ -56,13 +56,13 @@ contract('TimedStateMachine', accounts => {
 
     let currentState = web3.toUtf8(await timedStateMachine.getCurrentStateId.call());
 
-    assert.equal(currentState, state1);
+    assert.equal(currentState, state1a);
 
     await timedStateMachine.conditionalTransitions(); //calling it again should not affect the expected result
 
     currentState = web3.toUtf8(await timedStateMachine.getCurrentStateId.call());
 
-    assert.equal(currentState, state1);
+    assert.equal(currentState, state1a);
 
   });
 });
