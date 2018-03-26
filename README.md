@@ -5,6 +5,8 @@
 
 In order to use, build and test the contracts found in this repo, [Truffle](truffleframework.com) version > 4 is needed.
 
+These contracts have **not** been audited, use them with caution.
+
 ## Usage
 
 First install as a npm package in your truffle project directory:
