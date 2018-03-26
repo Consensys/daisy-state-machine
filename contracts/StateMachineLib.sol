@@ -4,129 +4,139 @@ pragma solidity 0.4.19;
 /// @title A library for implementing a generic state machine pattern.
 library StateMachineLib {
 
-    event LogTransition(bytes32 indexed stageId, uint256 blockNumber);
+    event LogTransition(bytes32 indexed stateId, uint256 blockNumber);
 
-    struct Stage {
-        // The id of the next stage
-        bytes32 nextId;
+    struct State {
+        // The id of the next state
+        bytes32 nextStateId;
 
-        // The identifiers for the available functions in each stage
+        // The identifiers for the available functions in each state
         mapping(bytes4 => bool) allowedFunctions;
 
         function() internal[] transitionCallbacks;
         function(bytes32) internal returns(bool)[] startConditions;
     }
 
-    struct State {
-        // The current stage id
-        bytes32 currentStageId;
+    struct StateMachine {
+        // The current state id
+        bytes32 currentStateId;
 
-        // Checks if a stage id is valid
-        mapping(bytes32 => bool) validStage;
+        // Checks if a state id is valid
+        mapping(bytes32 => bool) validState;
 
-        // Maps stage ids to their Stage structs
-        mapping(bytes32 => Stage) stages;
+        // Maps state ids to their State structs
+        mapping(bytes32 => State) states;
     }
 
-    /// @dev Creates and sets the initial stage. It has to be called before creating any transitions.
-    /// @param stageId The id of the (new) stage to set as initial stage.
-    function setInitialStage(State storage self, bytes32 stageId) public {
-        require(self.currentStageId == 0);
-        self.validStage[stageId] = true;
-        self.currentStageId = stageId;
+    /// @dev Creates and sets the initial state. It has to be called before creating any transitions.
+    /// @param stateId The id of the (new) state to set as initial state.
+    function setInitialState(StateMachine storage stateMachine, bytes32 stateId) public {
+        require(stateMachine.currentStateId == 0);
+        stateMachine.validState[stateId] = true;
+        stateMachine.currentStateId = stateId;
     }
 
-    /// @dev Creates a transition from 'fromId' to 'toId'. If fromId already had a nextId, it deletes the now unreachable stage.
-    /// @param fromId The id of the stage from which the transition begins.
-    /// @param toId The id of the stage that will be reachable from "fromId".
-    function createTransition(State storage self, bytes32 fromId, bytes32 toId) public {
-        require(self.validStage[fromId]);
+    /// @dev Creates a transition from 'fromId' to 'toId'. If fromId already had a nextStateId, it deletes the now unreachable state.
+    /// @param fromId The id of the state from which the transition begins.
+    /// @param toId The id of the state that will be reachable from "fromId".
+    function createTransition(StateMachine storage stateMachine, bytes32 fromId, bytes32 toId) public {
+        require(stateMachine.validState[fromId]);
 
-        Stage storage from = self.stages[fromId];
+        State storage from = stateMachine.states[fromId];
 
-        // Invalidate the stage that won't be reachable any more
-        if (from.nextId != 0) {
-            self.validStage[from.nextId] = false;
-            delete self.stages[from.nextId];
+        // Invalidate the state that won't be reachable any more
+        if (from.nextStateId != 0) {
+            stateMachine.validState[from.nextStateId] = false;
+            delete stateMachine.states[from.nextStateId];
         }
 
-        from.nextId = toId;
-        self.validStage[toId] = true;
+        from.nextStateId = toId;
+        stateMachine.validState[toId] = true;
     }
 
-    /// @dev Creates the given stages.
-    /// @param stageIds Array of stage ids.
-    function setStages(State storage self, bytes32[] stageIds) public {
-        require(stageIds.length > 0);
+    /// @dev Creates the given states.
+    /// @param stateIds Array of state ids.
+    function setStates(StateMachine storage stateMachine, bytes32[] stateIds) public {
+        require(stateIds.length > 0);
 
-        setInitialStage(self, stageIds[0]);
+        setInitialState(stateMachine, stateIds[0]);
 
-        for (uint256 i = 1; i < stageIds.length; i++) {
-            createTransition(self, stageIds[i - 1], stageIds[i]);
+        for (uint256 i = 1; i < stateIds.length; i++) {
+            createTransition(stateMachine, stateIds[i - 1], stateIds[i]);
         }
     }
 
-    /// @dev Goes to the next stage if posible (if the next stage is valid)
-    function goToNextStage(State storage self) public {
-        Stage storage current = self.stages[self.currentStageId];
+    /// @dev Goes to the next state if posible (if the next state is valid)
+    function goToNextState(StateMachine storage stateMachine) internal {
+        require(stateMachine.validState[stateMachine.currentStateId]);
+        State storage currentState = stateMachine.states[stateMachine.currentStateId];
 
-        bytes32 nextId = current.nextId;
-        require(self.validStage[nextId]);
+        bytes32 nextStateId = currentState.nextStateId;
+        require(stateMachine.validState[nextStateId]);
 
-        self.currentStageId = current.nextId;
+        stateMachine.currentStateId = nextStateId;
 
-        Stage storage next = self.stages[nextId];
+        State storage nextState = stateMachine.states[nextStateId];
 
-        for (uint256 i = 0; i < next.transitionCallbacks.length; i++) {
-            next.transitionCallbacks[i]();
+        for (uint256 i = 0; i < nextState.transitionCallbacks.length; i++) {
+            nextState.transitionCallbacks[i]();
         }
 
-        LogTransition(nextId, block.number);
+        LogTransition(nextStateId, block.number);
     }
 
-    /// @dev Checks if the a function is allowed in the current stage.
-    /// @param selector A function selector (bytes4[keccak256(functionSignature)])
-    /// @return true If the function is allowed in the current stage
-    function checkAllowedFunction(State storage self, bytes4 selector) public constant returns(bool) {
-        return self.stages[self.currentStageId].allowedFunctions[selector];
+    /// @dev Checks if the a function is allowed in the current state.
+    /// @param functionSelector A function selector (bytes4[keccak256(functionSignature)])
+    /// @return true If the function is allowed in the current state
+    function checkAllowedFunction(StateMachine storage stateMachine, bytes4 functionSelector) public constant returns(bool) {
+        require(stateMachine.validState[stateMachine.currentStateId]);
+        return stateMachine.states[stateMachine.currentStateId].allowedFunctions[functionSelector];
     }
 
-    /// @dev Allow a function in the given stage.
-    /// @param stageId The id of the stage
-    /// @param selector A function selector (bytes4[keccak256(functionSignature)])
-    function allowFunction(State storage self, bytes32 stageId, bytes4 selector) public {
-        require(self.validStage[stageId]);
-        self.stages[stageId].allowedFunctions[selector] = true;
+    /// @dev Allow a function in the given state.
+    /// @param stateId The id of the state
+    /// @param functionSelector A function selector (bytes4[keccak256(functionSignature)])
+    function allowFunction(StateMachine storage stateMachine, bytes32 stateId, bytes4 functionSelector) public {
+        require(stateMachine.validState[stateId]);
+        stateMachine.states[stateId].allowedFunctions[functionSelector] = true;
     }
 
-    function addStartCondition(State storage self, bytes32 stageId, function(bytes32) internal returns(bool) condition) internal {
-        require(self.validStage[stageId]);
-        self.stages[stageId].startConditions.push(condition);
+    ///@dev add a function returning a boolean as a start condition for a state
+    ///@param stateId The ID of the state to add the condition for
+    ///@param condition Start condition function - returns true if a start condition (for a given state ID) is met
+    function addStartCondition(StateMachine storage stateMachine, bytes32 stateId, function(bytes32) internal returns(bool) condition) internal {
+        require(stateMachine.validState[stateId]);
+        stateMachine.states[stateId].startConditions.push(condition);
     }
 
-    function addCallback(State storage self, bytes32 stageId, function() internal callback) internal {
-        require(self.validStage[stageId]);
-        self.stages[stageId].transitionCallbacks.push(callback);
+    ///@dev add a callback function for a state
+    ///@param stateId The ID of the state to add a callback function for
+    ///@param callback The callback function to add (if the state is valid)
+    function addCallback(StateMachine storage stateMachine, bytes32 stateId, function() internal callback) internal {
+        require(stateMachine.validState[stateId]);
+        stateMachine.states[stateId].transitionCallbacks.push(callback);
     }
 
-    function conditionalTransitions(State storage self) public {
+    ///@dev transitions the state machine into the state it should currently be in
+    ///@dev by taking into account the current conditions and how many further transitions can occur 
+    function conditionalTransitions(StateMachine storage stateMachine) internal {
 
-        bytes32 nextId = self.stages[self.currentStageId].nextId;
+        bytes32 nextStateId = stateMachine.states[stateMachine.currentStateId].nextStateId;
 
-        while (self.validStage[nextId]) {
-            StateMachineLib.Stage storage next = self.stages[nextId];
-            // If one of the next stage's condition is true, go to next stage and continue
-            bool stageChanged = false;
-            for (uint256 i = 0; i < next.startConditions.length; i++) {
-                if (next.startConditions[i](nextId)) {
-                    goToNextStage(self);
-                    nextId = next.nextId;
-                    stageChanged = true;
+        while (stateMachine.validState[nextStateId]) {
+            StateMachineLib.State storage nextState = stateMachine.states[nextStateId];
+            // If one of the next state's conditions is met, go to this state and continue
+            bool stateChanged = false;
+            for (uint256 i = 0; i < nextState.startConditions.length; i++) {
+                if (nextState.startConditions[i](nextStateId)) {
+                    goToNextState(stateMachine);
+                    nextStateId = nextState.nextStateId;
+                    stateChanged = true;
                     break;
                 }
             }
-
-            if (!stageChanged) break;
+            // If none of the next state's conditions are met, then we are in the right current state
+            if (!stateChanged) break;
         }
     }
 }

@@ -4,23 +4,23 @@ import "./StateMachineLib.sol";
 
 
 contract StateMachine {
-    using StateMachineLib for StateMachineLib.State;
-    StateMachineLib.State internal state;
+    using StateMachineLib for StateMachineLib.StateMachine;
+    StateMachineLib.StateMachine internal stateMachine;
 
     /* This modifier performs the conditional transitions and checks that the function 
-     * to be executed is allowed in the current stage
+     * to be executed is allowed in the current State
      */
     modifier checkAllowed {
-        state.conditionalTransitions();
-        require(state.checkAllowedFunction(msg.sig));
+        stateMachine.conditionalTransitions();
+        require(stateMachine.checkAllowedFunction(msg.sig));
         _;
     }
 
     function conditionalTransitions() public {
-        state.conditionalTransitions();
+        stateMachine.conditionalTransitions();
     }
 
-    function getCurrentStageId() public returns(bytes32) {
-        return state.currentStageId;
+    function getCurrentStateId() public returns(bytes32) {
+        return stateMachine.currentStateId;
     }
 }

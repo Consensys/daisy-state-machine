@@ -4,20 +4,20 @@ import "../../contracts/TimedStateMachine.sol";
 
 
 contract TimedStateMachineMock is TimedStateMachine {
-    bytes32 public constant STAGE0 = "STAGE0";
-    bytes32 public constant STAGE1 = "STAGE1";
-    bytes32 public constant STAGE2 = "STAGE2";
-    bytes32 public constant STAGE3 = "STAGE3";
+    bytes32 public constant STATE0 = "STATE0";
+    bytes32 public constant STATE1 = "STATE1";
+    bytes32 public constant STATE2 = "STATE2";
+    bytes32 public constant STATE3 = "STATE3";
 
     function TimedStateMachineMock() public { 
-        state.setInitialStage(STAGE0);
-        state.createTransition(STAGE0, STAGE1);
-        state.createTransition(STAGE1, STAGE2);
-        state.createTransition(STAGE2, STAGE3);
+        stateMachine.setInitialState(STATE0);
+        stateMachine.createTransition(STATE0, STATE1);
+        stateMachine.createTransition(STATE1, STATE2);
+        stateMachine.createTransition(STATE2, STATE3);
     }
 
-    // Helper to set the stage start time
-    function setStageStartTimeHelper(bytes32 stageId, uint256 timestamp) public {
-        setStageStartTime(stageId, timestamp);
+    // Helper to set the state start time
+    function setStateStartTimeHelper(bytes32 stateId, uint256 timestamp) public {
+        setStateStartTime(stateId, timestamp);
     }
 }
