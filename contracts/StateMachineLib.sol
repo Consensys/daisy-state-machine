@@ -66,7 +66,7 @@ library StateMachineLib {
 
     
     /// @dev Goes to the next state if posible (if the next state is valid)
-    /// @param _nextStateId dfsdf
+    /// @param _nextStateId stateId of the state to transition to
     function goToNextState(StateMachine storage _stateMachine, bytes32 _nextStateId) internal {
         require(_stateMachine.validState[_nextStateId]);
         require(_stateMachine.states[_stateMachine.currentStateId].nextStates[_nextStateId]);
