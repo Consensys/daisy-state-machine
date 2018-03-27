@@ -4,12 +4,13 @@
   "description": "Solidity framework to implement a state machine pattern.",
   "repository": "https://github.com/tokenfoundry/state-machine.git",
   "license": "MIT",
-  "author": {
+  "contributors": [{
     "email": "vicente.dragicevic@consensys.net",
-    "name": "Vicente Dragicevic",
+    "name": "Vicente Dragicevic"
+  }, {
     "email": "alice.henshaw@consensys.net",
     "name": "Alice Henshaw"
-  },
+  }],
   "scripts": {
     "test": "truffle test",
     "lint": "eslint .",
