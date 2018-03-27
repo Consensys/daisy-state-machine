@@ -72,9 +72,11 @@ library StateMachineLib {
         require(_stateMachine.states[_stateMachine.currentStateId].nextStates[_nextStateId]);
             
         _stateMachine.currentStateId = _nextStateId;
-        function() internal[] storage transitionCallbacks = _stateMachine.states[_nextStateId].transitionCallbacks;
-        for (uint256 j = 0; j < transitionCallbacks.length; j++) {
-            transitionCallbacks[j]();
+
+        //solidity parser can't parse function inside a function:
+        //function() internal[] storage transitionCallbacks = _stateMachine.states[_nextStateId].transitionCallbacks;
+        for (uint256 j = 0; j < _stateMachine.states[_nextStateId].transitionCallbacks.length; j++) {
+            _stateMachine.states[_nextStateId].transitionCallbacks[j]();
         }
              
         LogTransition(_nextStateId, block.number);
