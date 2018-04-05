@@ -19,7 +19,7 @@ contract TimedStateMachine is StateMachine {
         require(block.timestamp < _timestamp);
         require(startTime[_stateId] == 0);
         startTime[_stateId] = _timestamp;
-        stateMachine.addStartCondition(_stateId, hasStartTimePassed);
+        addStartCondition(_stateId, hasStartTimePassed);
 
         LogSetStateStartTime(_stateId, _timestamp);
     }

@@ -13,7 +13,7 @@ contract StateMachineMock is StateMachine {
     }
 
     function setStatesHelper(bytes32[] _states) public {
-        stateMachine.setStates(_states);
+        setStates(_states);
     }
 
     function dummyFunction() public checkAllowed {
@@ -31,19 +31,14 @@ contract StateMachineMock is StateMachine {
         callbackCalled = true;
     }
 
-    // Helper to test creating transitions
-    function createTransition(bytes32 fromId, bytes32 toId) public {
-        stateMachine.createTransition(fromId, toId);
-    }
-
     // Helper to test going to next state
     function goToNextStateHelper() public {
-        stateMachine.goToNextState();
+        goToNextState();
     }
 
     // Sets the dummy condition for a state
     function setDummyCondition(bytes32 stateId) public {
-        stateMachine.addStartCondition(stateId, dummyCondition);
+        addStartCondition(stateId, dummyCondition);
     }
 
     function setCondition(bool _condition) public {
@@ -52,17 +47,17 @@ contract StateMachineMock is StateMachine {
 
     // Sets the dummy callback condition for a state
     function setDummyVariableCondition(bytes32 stateId) public {
-        stateMachine.addStartCondition(stateId, dummyVariableCondition);
+        addStartCondition(stateId, dummyVariableCondition);
     }
 
     // Sets the dummy callback for a state
     function setDummyCallback(bytes32 stateId) public {
-        stateMachine.addCallback(stateId, dummyCallback);
+        addCallback(stateId, dummyCallback);
     }
 
     // Helper to test allowing a function
-    function allowFunction(bytes32 stateId, bytes4 selector) public {
-        stateMachine.allowFunction(stateId, selector);
+    function allowFunctionHelper(bytes32 stateId, bytes4 selector) public {
+        allowFunction(stateId, selector);
     }
 
 }

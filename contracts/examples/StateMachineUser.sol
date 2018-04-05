@@ -31,20 +31,20 @@ contract StateMachineUser is TimedStateMachine {
     }
 
     function setupStates() internal {
-        stateMachine.setStates(states);
+        setStates(states);
 
-        stateMachine.allowFunction(STATE1, this.foo.selector);
-        stateMachine.allowFunction(STATE2, this.bar.selector);
-        stateMachine.allowFunction(STATE3, 0); // Allow fallback function
+        allowFunction(STATE1, this.foo.selector);
+        allowFunction(STATE2, this.bar.selector);
+        allowFunction(STATE3, 0); // Allow fallback function
 
-        stateMachine.addCallback(STATE1, onState1);
-        stateMachine.addCallback(STATE2, onState2);
-        stateMachine.addCallback(STATE3, onState3);
+        addCallback(STATE1, onState1);
+        addCallback(STATE2, onState2);
+        addCallback(STATE3, onState3);
 
         setStateStartTime(STATE2, now + 2 weeks);
         setStateStartTime(STATE3, now + 3 weeks);
 
-        stateMachine.addStartCondition(STATE4, shouldState4Start);
+        addStartCondition(STATE4, shouldState4Start);
     }
 
     // Callback when entering each state
