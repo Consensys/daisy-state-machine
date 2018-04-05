@@ -6,16 +6,17 @@ library StateMachineLib {
 
     event LogTransition(bytes32 indexed _stateId, uint256 _blockNumber);
 
-    struct State {
-        // The id of the next state
-        bytes32[] nextStateIds;
-        mapping(bytes32 => bool) nextStates;
+    struct Transition {
 
-        // The identifiers for the available functions in each state
-        mapping(bytes4 => bool) allowedFunctions;
+        // Ids of the transitions start and end states
+        bytes32 startState;
+        bytes32 endState;
 
-        function() internal[] transitionCallbacks;
-        function(bytes32) internal returns(bool)[] startConditions;
+        //a function that must be performed to transition into the new state
+        function() internal transitionEffect;
+
+        //condition which must be true to transition
+        function(bytes32) internal returns(bool) startCondition;
     }
 
     struct StateMachine {
@@ -23,10 +24,14 @@ library StateMachineLib {
         bytes32 currentStateId;
 
         // Checks if a state id is valid
-        mapping(bytes32 => bool) validState;
+        mapping(bytes32 => bool) validStates;
 
         // Maps state ids to their State structs
-        mapping(bytes32 => State) states;
+        mapping(bytes32 => Transition[]) outgoingTransitions;
+
+        // stores allowed functions for each state
+        mapping(bytes32 => mapping(bytes4 => bool)) allowedFunctions;
+
     }
 
     /// @dev Creates and sets the initial state. It has to be called before creating any transitions.
@@ -37,49 +42,46 @@ library StateMachineLib {
         _stateMachine.currentStateId = _stateId;
     }
 
-    /// @dev Creates a transition from 'fromId' to 'toId'.
-    /// @dev this overloaded by the following function
+    /// @dev Creates a transition in the state machine
     /// @param _fromId The id of the state from which the transition begins.
     /// @param _toId The id of the state that will be reachable from "fromId".
-    function createTransition(StateMachine storage _stateMachine, bytes32 _fromId, bytes32 _toId) public {
-        require(_stateMachine.validState[_fromId]);
-
-        State storage from = _stateMachine.states[_fromId];
-        _stateMachine.validState[_toId] = true;
-        from.nextStates[_toId] = true;
-        from.nextStateIds.push(_toId);
+    function createTransition(StateMachine storage _stateMachine, Transition _transition) public {
+        bytes32 startState = _transition.startState;
+        require(_stateMachine.validState[startState]);
+        _stateMachine.validState[_transition.endState] = true;
+        _stateMachine.outgoingTransition[startState].push(_transition);
     }
 
-
-    /// @dev Creates a transition from 'fromId' to each of the elements in 'toIds'.
-    /// @dev this overloads the function above this
-    /// @param _fromId The id of the state from which the transition begins.
-    /// @param _toIds The id of the state that will be reachable from "fromId".
-    function createTransition(StateMachine storage _stateMachine, bytes32 _fromId, bytes32[] _toIds) public {
-        require(_toIds.length > 0);
-        require(_stateMachine.validState[_fromId]);
-
-        for (uint256 i = 0; i < _toIds.length; i++) {
-            createTransition(_stateMachine, _fromId, _toIds[i]);
+    /// @dev creates the whole state machine from a start state and list of transitions
+    /// @dev the transitions will be parsed one by one each can only be parsed if the 
+    /// @dev start state is the initial state or has been the end state of an earlier transition
+    ///@param _initialState The initial state of the state machine
+    ///@param _transitions a list of transitions through the state machine
+    function setupStateMachine(StateMachine storage _stateMachine, bytes32 _initialState, Transition[] _transitions) public {
+        _stateMachine.setInitialState(_initialState);
+        for (uint256 i = 0; i < _transitions.length; i++) {
+            createTransition(_transitions[i]);
         }
     }
 
     
-    /// @dev Goes to the next state if posible (if the next state is valid)
+    /// @dev Goes to the next state if possible (if the next state is valid)
     /// @param _nextStateId stateId of the state to transition to
-    function goToNextState(StateMachine storage _stateMachine, bytes32 _nextStateId) internal {
+    function goToNextState(StateMachine storage _stateMachine, bytes32 _nextStateId) public {
         require(_stateMachine.validState[_nextStateId]);
-        require(_stateMachine.states[_stateMachine.currentStateId].nextStates[_nextStateId]);
-            
-        _stateMachine.currentStateId = _nextStateId;
+        Transition[] storage outgoingTransitions = _stateMachine.outgoingTransitions[_stateMachine.currentStateId];
 
-        //solidity parser can't parse function inside a function:
-        //function() internal[] storage transitionCallbacks = _stateMachine.states[_nextStateId].transitionCallbacks;
-        for (uint256 j = 0; j < _stateMachine.states[_nextStateId].transitionCallbacks.length; j++) {
-            _stateMachine.states[_nextStateId].transitionCallbacks[j]();
+        for (uint256 i = 0; i < outgoingTransitions.length; i++) {
+            if (outgoingTransitions[i].endState == _nextStateId) {
+                _stateMachine.performTransition(outgoingTransitions[i]);
+            }
         }
              
         LogTransition(_nextStateId, block.number);
+    }
+
+    function performTransition(StateMachine storage _stateMachine, Transition transition) public {
+        //TO DO
     }
 
     /// @dev Checks if a function is allowed in the current state.
@@ -87,7 +89,7 @@ library StateMachineLib {
     /// @return true If the function is allowed in the current state
     function checkAllowedFunction(StateMachine storage _stateMachine, bytes4 _functionSelector) public constant returns(bool) {
         require (_stateMachine.validState[_stateMachine.currentStateId]);
-        return _stateMachine.states[_stateMachine.currentStateId].allowedFunctions[_functionSelector];
+        return _stateMachine.allowedFunctions[_stateMachine.currentStateId][_functionSelector];
     }
 
     /// @dev Allow a function in the given state.
