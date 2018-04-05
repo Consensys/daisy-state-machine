@@ -38,18 +38,18 @@ library StateMachineLib {
     /// @param _stateId The id of the (new) state to set as initial state.
     function setInitialState(StateMachine storage _stateMachine, bytes32 _stateId) public {
         require(_stateMachine.currentStateId == 0);
-        _stateMachine.validState[_stateId] = true;
+        _stateMachine.validStates[_stateId] = true;
         _stateMachine.currentStateId = _stateId;
     }
 
     /// @dev Creates a transition in the state machine
     /// @param _fromId The id of the state from which the transition begins.
     /// @param _toId The id of the state that will be reachable from "fromId".
-    function createTransition(StateMachine storage _stateMachine, Transition _transition) public {
+    function createTransition(StateMachine storage _stateMachine, Transition storage _transition) public {
         bytes32 startState = _transition.startState;
-        require(_stateMachine.validState[startState]);
-        _stateMachine.validState[_transition.endState] = true;
-        _stateMachine.outgoingTransition[startState].push(_transition);
+        require(_stateMachine.validStates[startState]);
+        _stateMachine.validStates[_transition.endState] = true;
+        _stateMachine.outgoingTransitions[startState].push(_transition);
     }
 
     /// @dev creates the whole state machine from a start state and list of transitions
@@ -57,10 +57,10 @@ library StateMachineLib {
     /// @dev start state is the initial state or has been the end state of an earlier transition
     ///@param _initialState The initial state of the state machine
     ///@param _transitions a list of transitions through the state machine
-    function setupStateMachine(StateMachine storage _stateMachine, bytes32 _initialState, Transition[] _transitions) public {
+    function setupStateMachine(StateMachine storage _stateMachine, bytes32 _initialState, Transition[] storage _transitions) public {
         _stateMachine.setInitialState(_initialState);
         for (uint256 i = 0; i < _transitions.length; i++) {
-            createTransition(_transitions[i]);
+            _stateMachine.createTransition(_transitions[i]);
         }
     }
 
@@ -80,8 +80,12 @@ library StateMachineLib {
         LogTransition(_nextStateId, block.number);
     }
 
+
     function performTransition(StateMachine storage _stateMachine, Transition transition) public {
-        //TO DO
+        require(_stateMachine.currentStateId == transition.startState);
+        //does it matter which way round the next 2 lines are???
+        transition.transitionEffect();
+        _stateMachine.currentStateId = transition.endState;
     }
 
     /// @dev Checks if a function is allowed in the current state.
@@ -97,46 +101,26 @@ library StateMachineLib {
     /// @param _functionSelector A function selector (bytes4[keccak256(functionSignature)])
     function allowFunction(StateMachine storage _stateMachine, bytes32 _stateId, bytes4 _functionSelector) public {
         require(_stateMachine.validState[_stateId]);
-        _stateMachine.states[_stateId].allowedFunctions[_functionSelector] = true;
-    }
-
-    ///@dev add a function returning a boolean as a start condition for a state
-    ///@param _stateId The ID of the state to add the condition for
-    ///@param _condition Start condition function - returns true if a start condition (for a given state ID) is met
-    function addStartCondition(StateMachine storage _stateMachine, bytes32 _stateId, function(bytes32) internal returns(bool) _condition) internal {
-        require(_stateMachine.validState[_stateId]);
-        _stateMachine.states[_stateId].startConditions.push(_condition);
-    }
-
-    ///@dev add a callback function for a state
-    ///@param _stateId The ID of the state to add a callback function for
-    ///@param _callback The callback function to add (if the state is valid)
-    function addCallback(StateMachine storage _stateMachine, bytes32 _stateId, function() internal _callback) internal {
-        require(_stateMachine.validState[_stateId]);
-        _stateMachine.states[_stateId].transitionCallbacks.push(_callback);
+        _stateMachine.allowedFunctions[_stateId][_functionSelector] = true;
     }
 
     ///@dev transitions the state machine into the state it should currently be in
     ///@dev by taking into account the current conditions and how many further transitions can occur 
     function conditionalTransitions(StateMachine storage _stateMachine) internal {
 
-        bytes32[] storage nextStateIds = _stateMachine.states[_stateMachine.currentStateId].nextStateIds;
+        Transition[] storage outgoingTransitions = _stateMachine.outgoingTransitions[_stateMachine.currentStateId];
 
-        while (nextStateIds.length > 0) {
+        while (outgoingTransitions.length > 0) {
             bool stateChanged = false;
             //consider each of the next states in turn
-            for (uint256 j = 0; j < nextStateIds.length; j++) {
+            for (uint256 j = 0; j < outgoingTransitions.length; j++) {
                 //Get the state that you are now to consider
-                bytes32 nextStateId = nextStateIds[j];
-                StateMachineLib.State storage nextState = _stateMachine.states[nextStateId];
-                // If one of this state's start conditions is met, go to this state and continue
-                for (uint256 i = 0; i < nextState.startConditions.length; i++) {
-                    if (nextState.startConditions[i](nextStateId)) {
-                        goToNextState(_stateMachine,nextStateId);
-                        nextStateIds = nextState.nextStateIds;
-                        stateChanged = true;
-                        break;
-                    }
+                Transition storage transition = outgoingTransitions[j];
+                // If this state's start condition is met, go to this state and continue
+                if (transition.startCondition(transition.endState)) {
+                    _stateMachine.performTransition(transition);
+                    outgoingTransitions = _stateMachine.outgoingTransitions[transition.endState];
+                    stateChanged = true;
                 }
                 // If we have changed state, we need to break out and start again for the next state
                 if (stateChanged) break;
@@ -145,4 +129,5 @@ library StateMachineLib {
             if (!stateChanged) break;
         }
     }
+
 }
