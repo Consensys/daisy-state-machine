@@ -31,7 +31,20 @@ contract('TimedStateMachine', accounts => {
     const _timestamp = await timedStateMachine.getStateStartTime.call(state1);
 
     assert.equal(timestamp, _timestamp);
+  });
 
+  it('should not be possible to set a start time twice for the same state', async () => {
+    const timestamp = (await latestTime()) + duration.weeks(1);
+
+    await timedStateMachine.setStateStartTimeHelper(state1, timestamp);
+
+    let _timestamp = await timedStateMachine.getStateStartTime.call(state1);
+
+    assert.equal(timestamp, _timestamp);
+    await timedStateMachine.setStateStartTimeHelper(state1, timestamp + 1);
+
+    _timestamp = await timedStateMachine.getStateStartTime.call(state1);
+    assert.equal(timestamp + 1, _timestamp);
   });
 
   it('should transition to the next state if the set timestamp is reached', async () => {
