@@ -34,7 +34,7 @@ contract StateMachine {
         currentStateId = stateIds[0];
 
         for (uint256 i = 1; i < stateIds.length; i++) {
-            nextStateId[stateIds[i - 1]]  = stateIds[i];
+            nextStateId[stateIds[i - 1]] = stateIds[i];
         }
     }
 
@@ -50,7 +50,7 @@ contract StateMachine {
         bytes32 next = nextStateId[currentStateId];
         require(next != 0);
 
-        currentStateId =  next;
+        currentStateId = next;
 
         for (uint256 i = 0; i < transitionCallbacks[next].length; i++) {
             transitionCallbacks[next][i]();
