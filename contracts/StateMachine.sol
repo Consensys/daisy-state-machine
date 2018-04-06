@@ -9,6 +9,8 @@ contract StateMachine {
     // condition which must be true to transition
     mapping(bytes32 => function(bytes32) internal returns(bool)[]) startConditions;
 
+    mapping(bytes32 => bool) transitionExists;
+
     // The current state id
     bytes32 public currentStateId;
 
@@ -65,6 +67,17 @@ contract StateMachine {
         // validStates[_transition.endState] = true;
         bytes32 transitionId = keccak256(fromId, toId);
         nextStates[fromId].push(toId);
+        transitionExists[transitionId] = true;
+    }
+
+    function addStartCondition(bytes32 transitionId, function(bytes32) internal returns(bool) startCondition) internal {
+        require(transitionExists[transitionId]);
+        startConditions[transitionId].push(startCondition);
+    }
+
+    function addTransitionEffect(bytes32 transitionId, function() internal transitionEffect) internal {
+        require(transitionExists[transitionId]);
+        transitionEffects[transitionId].push(transitionEffect);
     }
 
     /// @dev Allow a function in the given state.
@@ -78,17 +91,13 @@ contract StateMachine {
     /// @param _nextStateId stateId of the state to transition to
     function goToNextState(bytes32 _nextStateId) public {
         // require(validStates[_nextStateId]);
-
-        for (uint256 i = 0; i < nextStates[currentStateId].length; i++) {
-            if (nextStates[currentStateId][i] == _nextStateId) {
-                transitionEffects[nextStates[currentStateId][i].transitionEffect();
-                currentStateId = _nextStateId;
-                LogTransition(_nextStateId, block.number);
-
-                break;
-            }
+        bytes32 transitionId = getTransitionId(currentStateId, _nextStateId);
+        require(transitionExists[transitionId]);
+        for (uint256 i = 0; i < transitionEffects[transitionId].length; i++) {
+            transitionEffects[transitionId][i]();
         }
-             
+        currentStateId = _nextStateId;
+        LogTransition(_nextStateId, block.number);
     }
 
 
@@ -96,24 +105,25 @@ contract StateMachine {
     ///@dev by taking into account the current conditions and how many further transitions can occur 
     function conditionalTransitions() internal {
 
-        Transition[] storage outgoing = outgoingTransitions[currentStateId];
+        bytes32[] storage outgoing = nextStates[currentStateId];
 
         while (outgoing.length > 0) {
             bool stateChanged = false;
             //consider each of the next states in turn
             for (uint256 j = 0; j < outgoing.length; j++) {
                 //Get the state that you are now to consider
-                Transition storage transition = outgoing[j];
+                bytes32 nextState = outgoing[j];
+                bytes32 transitionId = getTransitionId(currentStateId, nextState);
                 // If this state's start condition is met, go to this state and continue
-                if (transition.startCondition(transition.endState)) {
-                    transition.transitionEffect();
-                    currentStateId = transition.endState;
-                    LogTransition(transition.endState, block.number);
-
-                    outgoing = outgoingTransitions[transition.endState];
-                    stateChanged = true;
-                    break;
+                for (uint256 i = 0; i < startConditions[transitionId].length; i++) {
+                    if (startConditions[transitionId][i](nextState)) {
+                        goToNextState(nextState);
+                        stateChanged = true;
+                        outgoing = nextStates[currentStateId];
+                        break;
+                    }
                 }
+                if (stateChanged) break;
             }
             //If we've tried all the possible following states and not changed, we're in the right state now
             if (!stateChanged) break;
