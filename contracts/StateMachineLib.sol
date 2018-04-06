@@ -58,9 +58,9 @@ library StateMachineLib {
     ///@param _initialState The initial state of the state machine
     ///@param _transitions a list of transitions through the state machine
     function setupStateMachine(StateMachine storage _stateMachine, bytes32 _initialState, Transition[] storage _transitions) public {
-        _stateMachine.setInitialState(_initialState);
+        setInitialState(_stateMachine, _initialState);
         for (uint256 i = 0; i < _transitions.length; i++) {
-            _stateMachine.createTransition(_transitions[i]);
+            createTransition(_stateMachine, _transitions[i]);
         }
     }
 
@@ -68,12 +68,12 @@ library StateMachineLib {
     /// @dev Goes to the next state if possible (if the next state is valid)
     /// @param _nextStateId stateId of the state to transition to
     function goToNextState(StateMachine storage _stateMachine, bytes32 _nextStateId) public {
-        require(_stateMachine.validState[_nextStateId]);
+        require(_stateMachine.validStates[_nextStateId]);
         Transition[] storage outgoingTransitions = _stateMachine.outgoingTransitions[_stateMachine.currentStateId];
 
         for (uint256 i = 0; i < outgoingTransitions.length; i++) {
             if (outgoingTransitions[i].endState == _nextStateId) {
-                _stateMachine.performTransition(outgoingTransitions[i]);
+                performTransition(_stateMachine, outgoingTransitions[i]);
             }
         }
              
@@ -81,7 +81,7 @@ library StateMachineLib {
     }
 
 
-    function performTransition(StateMachine storage _stateMachine, Transition transition) public {
+    function performTransition(StateMachine storage _stateMachine, Transition storage transition) public {
         require(_stateMachine.currentStateId == transition.startState);
         //does it matter which way round the next 2 lines are???
         transition.transitionEffect();
@@ -92,7 +92,7 @@ library StateMachineLib {
     /// @param _functionSelector A function selector (bytes4[keccak256(functionSignature)])
     /// @return true If the function is allowed in the current state
     function checkAllowedFunction(StateMachine storage _stateMachine, bytes4 _functionSelector) public constant returns(bool) {
-        require (_stateMachine.validState[_stateMachine.currentStateId]);
+        require (_stateMachine.validStates[_stateMachine.currentStateId]);
         return _stateMachine.allowedFunctions[_stateMachine.currentStateId][_functionSelector];
     }
 
@@ -100,7 +100,7 @@ library StateMachineLib {
     /// @param _stateId The id of the state
     /// @param _functionSelector A function selector (bytes4[keccak256(functionSignature)])
     function allowFunction(StateMachine storage _stateMachine, bytes32 _stateId, bytes4 _functionSelector) public {
-        require(_stateMachine.validState[_stateId]);
+        require(_stateMachine.validStates[_stateId]);
         _stateMachine.allowedFunctions[_stateId][_functionSelector] = true;
     }
 
@@ -118,7 +118,7 @@ library StateMachineLib {
                 Transition storage transition = outgoingTransitions[j];
                 // If this state's start condition is met, go to this state and continue
                 if (transition.startCondition(transition.endState)) {
-                    _stateMachine.performTransition(transition);
+                    performTransition(_stateMachine, transition);
                     outgoingTransitions = _stateMachine.outgoingTransitions[transition.endState];
                     stateChanged = true;
                 }
