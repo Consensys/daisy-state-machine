@@ -42,6 +42,8 @@ contract StateMachine {
     /// @param _fromStateId The id of the start state of the transition.
     /// @param _toStateId The id of the end state of the transition.
     function getTransitionId(bytes32 _fromStateId, bytes32 _toStateId) public pure returns(bytes32) {
+        require(_fromStateId != 0);
+        require(_toStateId != 0);
         return keccak256(_fromStateId, _toStateId);
     }
 
