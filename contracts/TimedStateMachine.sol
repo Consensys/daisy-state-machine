@@ -11,14 +11,16 @@ contract TimedStateMachine is StateMachine {
     mapping(bytes32 => uint256) private transitionStartTime;
 
     /// @dev Returns the timestamp for the given state id.
-    /// @param _stateId The id of the state for which we want to set the start timestamp.
+    /// @param _fromStateId The id of the start state of the transition.
+    /// @param _toStateId The id of the end state of the transition.
     function getTransitionStartTime(bytes32 _fromStateId, bytes32 _toStateId) public view returns(uint256) {
         bytes32 transitionId = getTransitionId(_fromStateId, _toStateId);
         return transitionStartTime[transitionId];
     }
 
     /// @dev Sets the starting timestamp for a state.
-    /// @param _stateId The id of the state for which we want to set the start timestamp.
+    /// @param _fromStateId The id of the start state of the transition.
+    /// @param _toStateId The id of the end state of the transition.
     /// @param _timestamp The start timestamp for the given state. It should be bigger than the current one.
     function setTransitionStartTime(bytes32 _fromStateId, bytes32 _toStateId, uint256 _timestamp) internal {
         require(block.timestamp < _timestamp);
@@ -28,7 +30,7 @@ contract TimedStateMachine is StateMachine {
             if (!transitionExists[transitionId]) {
                 createTransition(_fromStateId, _toStateId);
             }
-            addStartCondition(transitionId, hasStartTimePassed);
+            addStartCondition(_fromStateId, _toStateId, hasStartTimePassed);
         }
 
         transitionStartTime[transitionId] = _timestamp;

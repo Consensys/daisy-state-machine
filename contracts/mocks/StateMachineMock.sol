@@ -12,8 +12,8 @@ contract StateMachineMock is StateMachine {
     function StateMachineMock() public { 
     }
 
-    function createTransitionHelper(bytes32 _fromId, bytes32 _toId) public {
-        createTransition(_fromId, _toId);
+    function createTransitionHelper(bytes32 _fromStateId, bytes32 _toStateId) public {
+        createTransition(_fromStateId, _toStateId);
     }
  
 
@@ -38,8 +38,8 @@ contract StateMachineMock is StateMachine {
     }
 
     // Sets the dummy condition for a state
-    function setDummyCondition(bytes32 _fromId, bytes32 _toId) public {
-        addStartCondition(_fromId, _toId, dummyCondition);
+    function setDummyCondition(bytes32 _fromStateId, bytes32 _toStateId) public {
+        addStartCondition(_fromStateId, _toStateId, dummyCondition);
     }
 
     function setCondition(bool _condition) public {
@@ -47,13 +47,13 @@ contract StateMachineMock is StateMachine {
     }
 
     // Sets the dummy transitionEffect condition for a state
-    function setDummyVariableCondition(bytes32 _fromId, bytes32 _toId) public {
-        addStartCondition(_fromId, _toId, dummyVariableCondition);
+    function setDummyVariableCondition(bytes32 _fromStateId, bytes32 _toStateId) public {
+        addStartCondition(_fromStateId, _toStateId, dummyVariableCondition);
     }
 
     // Sets the dummy transitionEffect for a state
-    function setDummyTransitionEffect(bytes32 _fromId, bytes32 _toId) public {
-        addTransitionEffect(_fromId, _toId, dummyTransitionEffect);
+    function setDummyTransitionEffect(bytes32 _fromStateId, bytes32 _toStateId) public {
+        addTransitionEffect(_fromStateId, _toStateId, dummyTransitionEffect);
     }
 
     // Helper to test allowing a function
