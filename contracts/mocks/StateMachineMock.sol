@@ -7,14 +7,15 @@ contract StateMachineMock is StateMachine {
     bytes4 public dummyFunctionSelector = this.dummyFunction.selector;
 
     bool public condition = false;
-    bool public callbackCalled = false;
+    bool public transitionEffectCalled = false;
 
     function StateMachineMock() public { 
     }
 
-    function setStatesHelper(bytes32[] _states) public {
-        setStates(_states);
+    function createTransitionHelper(bytes32 _fromId, bytes32 _toId) public {
+        createTransition(_fromId, _toId);
     }
+ 
 
     function dummyFunction() public checkAllowed {
     }
@@ -27,37 +28,37 @@ contract StateMachineMock is StateMachine {
         return condition;
     }
 
-    function dummyCallback() internal {
-        callbackCalled = true;
+    function dummyTransitionEffect() internal {
+        transitionEffectCalled = true;
     }
 
     // Helper to test going to next state
-    function goToNextStateHelper() public {
-        goToNextState();
+    function goToNextStateHelper(bytes32 _stateId) public {
+        goToNextState(_stateId);
     }
 
     // Sets the dummy condition for a state
-    function setDummyCondition(bytes32 stateId) public {
-        addStartCondition(stateId, dummyCondition);
+    function setDummyCondition(bytes32 _fromId, bytes32 _toId) public {
+        addStartCondition(_fromId, _toId, dummyCondition);
     }
 
     function setCondition(bool _condition) public {
         condition = _condition;
     }
 
-    // Sets the dummy callback condition for a state
-    function setDummyVariableCondition(bytes32 stateId) public {
-        addStartCondition(stateId, dummyVariableCondition);
+    // Sets the dummy transitionEffect condition for a state
+    function setDummyVariableCondition(bytes32 _fromId, bytes32 _toId) public {
+        addStartCondition(_fromId, _toId, dummyVariableCondition);
     }
 
-    // Sets the dummy callback for a state
-    function setDummyCallback(bytes32 stateId) public {
-        addCallback(stateId, dummyCallback);
+    // Sets the dummy transitionEffect for a state
+    function setDummyTransitionEffect(bytes32 _fromId, bytes32 _toId) public {
+        addTransitionEffect(_fromId, _toId, dummyTransitionEffect);
     }
 
     // Helper to test allowing a function
-    function allowFunctionHelper(bytes32 stateId, bytes4 selector) public {
-        allowFunction(stateId, selector);
+    function allowFunctionHelper(bytes32 _stateId, bytes4 _selector) public {
+        allowFunction(_stateId, _selector);
     }
 
 }

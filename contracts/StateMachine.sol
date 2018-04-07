@@ -66,7 +66,7 @@ contract StateMachine {
 
     /// @dev Goes to the next state if possible (if the next state is valid)
     /// @param _nextStateId stateId of the state to transition to
-    function goToNextState(bytes32 _nextStateId) public {
+    function goToNextState(bytes32 _nextStateId) internal {
         // require(validStates[_nextStateId]);
         bytes32 transitionId = getTransitionId(currentStateId, _nextStateId);
         require(transitionExists[transitionId]);
