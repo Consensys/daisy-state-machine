@@ -12,6 +12,10 @@ contract StateMachineMock is StateMachine {
     function StateMachineMock() public { 
     }
 
+    function setInitialStateHelper(bytes32 _initialState) internal {
+        setInitialState(_initialState);
+    }
+
     function createTransitionHelper(bytes32 _fromStateId, bytes32 _toStateId) public {
         createTransition(_fromStateId, _toStateId);
     }

@@ -32,6 +32,12 @@ contract StateMachine {
         _;
     }
 
+    function setInitialState(bytes32 _initialState) internal {
+        require (currentStateId == 0);
+        require (_initialState != 0);
+        currentStateId = _initialState;
+    }
+
     /// @dev returns the id of the transition between 2 states.
     /// @param _fromStateId The id of the start state of the transition.
     /// @param _toStateId The id of the end state of the transition.
@@ -78,7 +84,6 @@ contract StateMachine {
     /// @dev Goes to the next state if possible (if the next state is valid and reachable by a transition from the current state)
     /// @param _nextStateId stateId of the state to transition to
     function goToNextState(bytes32 _nextStateId) internal {
-        // require(validStates[_nextStateId]);
         bytes32 transitionId = getTransitionId(currentStateId, _nextStateId);
         require(transitionExists[transitionId]);
         for (uint256 i = 0; i < transitionEffects[transitionId].length; i++) {
