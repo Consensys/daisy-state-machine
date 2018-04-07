@@ -14,9 +14,6 @@ contract StateMachine {
     // The current state id
     bytes32 public currentStateId;
 
-    // Specifies whether the state machine has been initialised
-    bool public hasBeenInitialised;
-
     // Maps state ids to their State structs
     mapping(bytes32 => bytes32[]) internal nextStates;
 
@@ -34,48 +31,28 @@ contract StateMachine {
         _;
     }
 
-    modifier checkInitialised {
-        require(hasBeenInitialised);
-        _;
-    }
-
-    /// @dev creates the whole state machine from a start state and list of transitions
-    /// @dev the transitions will be parsed one by one each can only be parsed if the 
-    /// @dev start state is the initial state or has been the end state of an earlier transition
-    ///@param _initialState The initial state of the state machine
-    ///@param _transitions a list of transitions through the state machine
-    // function setupStateMachine(bytes32 _initialState, Transition[] storage _transitions) internal {
-        // require(!hasBeenInitialised);
-        // currentStateId = _initialState;
-        // validStates[_initialState] = true;
-        // for (uint256 i = 0; i < _transitions.length; i++) {
-            // createTransition(_transitions[i]);
-        // }
-        // hasBeenInitialised = true;
-    // }
-
-    function getTransitionId(bytes32 fromId, bytes32 toId) public pure returns(bytes32) {
-        return keccak256(fromId, toId);
+    
+    function getTransitionId(bytes32 _fromId, bytes32 _toId) public pure returns(bytes32) {
+        return keccak256(_fromId, _toId);
     }
 
     /// @dev Creates a transition in the state machine
     /// @param _fromId The id of the state from which the transition begins.
     /// @param _toId The id of the state that will be reachable from "fromId".
-    function createTransition(bytes32 fromId, bytes32 toId) internal {
-        // bytes32 startState = _transition.startState;
-        // require(validStates[startState]);
-        // validStates[_transition.endState] = true;
-        bytes32 transitionId = keccak256(fromId, toId);
-        nextStates[fromId].push(toId);
+    function createTransition(bytes32 _fromId, bytes32 _toId) internal {
+        bytes32 transitionId = getTransitionId(_fromId, _toId);
+        nextStates[_fromId].push(_toId);
         transitionExists[transitionId] = true;
     }
 
-    function addStartCondition(bytes32 transitionId, function(bytes32) internal returns(bool) startCondition) internal {
+    function addStartCondition(bytes32 _fromId, bytes32 _toId, function(bytes32) internal returns(bool) _startCondition) internal {
+        bytes32 transitionId = getTransitionId(_fromId, _toId);
         require(transitionExists[transitionId]);
-        startConditions[transitionId].push(startCondition);
+        startConditions[transitionId].push(_startCondition);
     }
 
-    function addTransitionEffect(bytes32 transitionId, function() internal transitionEffect) internal {
+    function addTransitionEffect(bytes32 _fromId, bytes32 _toId, function() internal transitionEffect) internal {
+        bytes32 transitionId = getTransitionId(_fromId, _toId);
         require(transitionExists[transitionId]);
         transitionEffects[transitionId].push(transitionEffect);
     }
@@ -83,8 +60,8 @@ contract StateMachine {
     /// @dev Allow a function in the given state.
     /// @param stateId The id of the state
     /// @param functionSelector A function selector (bytes4[keccak256(functionSignature)])
-    function allowFunction(bytes32 stateId, bytes4 functionSelector) internal {
-        allowedFunctions[stateId][functionSelector] = true;
+    function allowFunction(bytes32 _stateId, bytes4 _functionSelector) internal {
+        allowedFunctions[_stateId][_functionSelector] = true;
     }
 
     /// @dev Goes to the next state if possible (if the next state is valid)
