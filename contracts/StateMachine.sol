@@ -18,6 +18,10 @@ contract StateMachine {
     // Maps state ids to all states reachable by 1 transition
     mapping(bytes32 => bytes32[]) internal nextStates;
 
+    // after the first transition in the state machine has occurred, it is immutable
+    // therefore set up must be complete by this time
+    bool machineImmutable;
+
     // stores true/false for allowed functions in each state
     mapping(bytes32 => mapping(bytes4 => bool)) public allowedFunctions;
 
@@ -29,6 +33,12 @@ contract StateMachine {
     modifier checkAllowed {
         conditionalTransitions();
         require(allowedFunctions[currentStateId][msg.sig]);
+        _;
+    }
+
+    // This is to ensure that after the state machine has been set up it cannot be changed
+    modifier stillSettingUp {
+        require(!machineImmutable);
         _;
     }
 
@@ -50,7 +60,7 @@ contract StateMachine {
     /// @dev Creates a transition in the state machine
     /// @param _fromStateId The id of the start state of the transition.
     /// @param _toStateId The id of the end state of the transition.
-    function createTransition(bytes32 _fromStateId, bytes32 _toStateId) internal {
+    function createTransition(bytes32 _fromStateId, bytes32 _toStateId) internal stillSettingUp {
         bytes32 transitionId = getTransitionId(_fromStateId, _toStateId);
         nextStates[_fromStateId].push(_toStateId);
         transitionExists[transitionId] = true;
@@ -60,7 +70,7 @@ contract StateMachine {
     /// @param _fromStateId The id of the start state of the transition.
     /// @param _toStateId The id of the end state of the transition.
     /// @param _startCondition The condition itself.
-    function addStartCondition(bytes32 _fromStateId, bytes32 _toStateId, function(bytes32) internal returns(bool) _startCondition) internal {
+    function addStartCondition(bytes32 _fromStateId, bytes32 _toStateId, function(bytes32) internal returns(bool) _startCondition) internal stillSettingUp {
         bytes32 transitionId = getTransitionId(_fromStateId, _toStateId);
         require(transitionExists[transitionId]);
         startConditions[transitionId].push(_startCondition);
@@ -70,7 +80,7 @@ contract StateMachine {
     /// @param _fromStateId The id of the start state of the transition.
     /// @param _toStateId The id of the end state of the transition.
     /// @param _transitionEffect The effect itself.
-    function addTransitionEffect(bytes32 _fromStateId, bytes32 _toStateId, function() internal _transitionEffect) internal {
+    function addTransitionEffect(bytes32 _fromStateId, bytes32 _toStateId, function() internal _transitionEffect) internal stillSettingUp {
         bytes32 transitionId = getTransitionId(_fromStateId, _toStateId);
         require(transitionExists[transitionId]);
         transitionEffects[transitionId].push(_transitionEffect);
@@ -79,7 +89,7 @@ contract StateMachine {
     /// @dev Allow a function in the given state.
     /// @param _stateId The id of the state
     /// @param _functionSelector A function selector (bytes4[keccak256(functionSignature)])
-    function allowFunction(bytes32 _stateId, bytes4 _functionSelector) internal {
+    function allowFunction(bytes32 _stateId, bytes4 _functionSelector) internal stillSettingUp {
         allowedFunctions[_stateId][_functionSelector] = true;
     }
 
@@ -92,6 +102,9 @@ contract StateMachine {
             transitionEffects[transitionId][i]();
         }
         currentStateId = _nextStateId;
+        if (!machineImmutable) {
+            machineImmutable = true;
+        }
         LogTransition(_nextStateId, block.number);
     }
 

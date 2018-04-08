@@ -10,14 +10,23 @@ contract TimedStateMachineMock is TimedStateMachine {
     bytes32 public constant STATE3 = "STATE3";
 
     function TimedStateMachineMock() public { 
-        createTransition(STATE0, STATE1);
-        createTransition(STATE0, STATE2);
-        createTransition(STATE1, STATE2);
-        createTransition(STATE1, STATE3);
     }
 
     // Helper to set the state start time
     function setTransitionStartTimeHelper(bytes32 _fromId, bytes32 _toId, uint256 _timestamp) public {
         setTransitionStartTime(_fromId, _toId, _timestamp);
+    }
+
+
+    function conditionalTransitionHelper() public {
+        conditionalTransitions();
+    }
+
+    function setInitialStateHelper(bytes32 _initialState) public {
+        setInitialState(_initialState);
+    }
+
+    function createTransitionHelper(bytes32 _fromStateId, bytes32 _toStateId) public {
+        createTransition(_fromStateId, _toStateId);
     }
 }

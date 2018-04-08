@@ -4,7 +4,7 @@ const StateMachineMock = artifacts.require('StateMachineMock');
 
 contract('StateMachine', accounts => {
   let stateMachine;
-  const invalidState = 'invalid';
+  const zeroState = 0;
   const state0 = 'STATE0';
   const state1 = 'STATE1';
   const state2 = 'STATE2';
@@ -14,17 +14,27 @@ contract('StateMachine', accounts => {
 
   beforeEach(async () => {
     stateMachine = await StateMachineMock.new();
-    await stateMachine.setStatesHelper([state0, state1, state2, state3]);
+    await stateMachine.setInitialStateHelper(state0);
+    await stateMachine.createTransitionHelper(state0, state1);
+    await stateMachine.createTransitionHelper(state0, state2);
+    await stateMachine.createTransitionHelper(state1, state2);
+    await stateMachine.createTransitionHelper(state1, state3);
     dummyFunctionSelector = await stateMachine.dummyFunctionSelector.call();
   });
 
-  it('should not be possible to set states if there is already one', async () => {
-    await expectThrow(stateMachine.setStatesHelper([invalidState]));
+  it('should not be possible to set initial state if there is already one', async () => {
+    await expectThrow(stateMachine.setInitialStateHelper(state1));
   });
 
-  it('should not be possible to use an empty array for setting the states', async () => {
+  it('should not be possible to set the intiial state as 0', async () => {
     stateMachine = await StateMachineMock.new();
-    await expectThrow(stateMachine.setStatesHelper([]));
+    await expectThrow(stateMachine.setInitialStateHelper(zeroState));
+  });
+
+  it('should not be possible to create a transition with to or from state of 0', async () => {
+    stateMachine = await StateMachineMock.new();
+    await expectThrow(stateMachine.createTransitionHelper(zeroState, state1));
+    await expectThrow(stateMachine.createTransitionHelper(state1, zeroState));
   });
 
   it('should be possible to allow a function', async () => {
@@ -34,7 +44,7 @@ contract('StateMachine', accounts => {
     await stateMachine.allowFunctionHelper(state3, dummyFunctionSelector);
   });
 
-  it('should not be possible to call an unallowed function', async () => {
+  it('should not be possible to call a function thats not allowed', async () => {
     await expectThrow(stateMachine.dummyFunction());
   });
 
@@ -49,37 +59,39 @@ contract('StateMachine', accounts => {
     currentState = await stateMachine.currentStateId.call();
     assert.equal(web3.toUtf8(currentState), state0);
 
-    await stateMachine.conditionalTransitions();
-
+    await stateMachine.conditionalTransitionHelper();
     currentState = await stateMachine.currentStateId.call();
     assert.equal(web3.toUtf8(currentState), state0);
 
-    await stateMachine.goToNextStateHelper();
+    await stateMachine.goToNextStateHelper(state1);
     currentState = await stateMachine.currentStateId.call();
     assert.equal(web3.toUtf8(currentState), state1);
 
-    await stateMachine.conditionalTransitions();
-
+    await stateMachine.conditionalTransitionHelper();
     currentState = await stateMachine.currentStateId.call();
     assert.equal(web3.toUtf8(currentState), state1);
 
-    await stateMachine.goToNextStateHelper();
+    await stateMachine.goToNextStateHelper(state2);
     currentState = await stateMachine.currentStateId.call();
     assert.equal(web3.toUtf8(currentState), state2);
 
-    await stateMachine.conditionalTransitions();
+    await stateMachine.conditionalTransitionHelper();
 
     currentState = await stateMachine.currentStateId.call();
     assert.equal(web3.toUtf8(currentState), state2);
 
-    await stateMachine.goToNextStateHelper();
-    currentState = await stateMachine.currentStateId.call();
-    assert.equal(web3.toUtf8(currentState), state3);
+  });
 
-    await stateMachine.conditionalTransitions();
+  it('should not be possible to edit the machine after it is initialised', async () => {
+    await stateMachine.setDummyCondition(state0, state2);
+    await stateMachine.conditionalTransitionHelper();
 
-    currentState = await stateMachine.currentStateId.call();
-    assert.equal(web3.toUtf8(currentState), state3);
+    let currentState = await stateMachine.currentStateId.call();
+    assert.equal(web3.toUtf8(currentState), state2);
+    
+    await expectThrow(stateMachine.createTransitionHelper(state2, state3));
+    await expectThrow(stateMachine.setDummyCondition(state0, state2));
+    await expectThrow(stateMachine.setDummyTransitionEffect(state0, state2));
   });
 
   it('should automatically go to a state with a condition that evaluates to true', async () => {
@@ -87,53 +99,80 @@ contract('StateMachine', accounts => {
     currentState = await stateMachine.currentStateId.call();
     assert.equal(web3.toUtf8(currentState), state0);
 
-    await stateMachine.conditionalTransitions();
+    await stateMachine.conditionalTransitionHelper();
 
     currentState = await stateMachine.currentStateId.call();
     assert.equal(web3.toUtf8(currentState), state0);
 
-    await stateMachine.setDummyCondition(state1);
-    //THIS LINE THROWS THE ERROR
-    await stateMachine.conditionalTransitions();
+    await stateMachine.setDummyCondition(state0, state1);
+    await stateMachine.setDummyVariableCondition(state1, state2);
+
+    await stateMachine.conditionalTransitionHelper();
     
     currentState = await stateMachine.currentStateId.call();
     assert.equal(web3.toUtf8(currentState), state1);
 
-    await stateMachine.setDummyVariableCondition(state2);
-    await stateMachine.conditionalTransitions();
+    await stateMachine.conditionalTransitionHelper();
 
     currentState = await stateMachine.currentStateId.call();
     assert.equal(web3.toUtf8(currentState), state1);
 
     await stateMachine.setCondition(true);
-    await stateMachine.conditionalTransitions();
+    await stateMachine.conditionalTransitionHelper();
 
     currentState = await stateMachine.currentStateId.call();
     assert.equal(web3.toUtf8(currentState), state2);
   });
 
-  it('should be possible to set a callback for a state', async () => {
-    let callbackCalled;
-    callbackCalled = await stateMachine.callbackCalled.call();
-    assert.isFalse(callbackCalled);
+  it('should be possible to set an effect for a transition', async () => {
+    let transitionEffectCalled;
+    transitionEffectCalled = await stateMachine.transitionEffectCalled.call();
+    assert.isFalse(transitionEffectCalled);
 
-    await stateMachine.setDummyCallback(state1);
-    callbackCalled = await stateMachine.callbackCalled.call();
-    assert.isFalse(callbackCalled);
-    //THIS LINE THROWS THE ERROR
-    await stateMachine.goToNextStateHelper();
-    callbackCalled = await stateMachine.callbackCalled.call();
-    assert.isTrue(callbackCalled);
+    await stateMachine.setDummyTransitionEffect(state0, state2);
+    transitionEffectCalled = await stateMachine.transitionEffectCalled.call();
+    assert.isFalse(transitionEffectCalled);
+
+    await stateMachine.goToNextStateHelper(state2);
+    transitionEffectCalled = await stateMachine.transitionEffectCalled.call();
+    assert.isTrue(transitionEffectCalled);
   });
 
   it('should not be possible to go to next state when in the last state', async () => {
     // Go to state 1
-    await stateMachine.goToNextStateHelper();
+    await stateMachine.goToNextStateHelper(state1);
     // Go to state 2
-    await stateMachine.goToNextStateHelper();
-    // Go to state 3
-    await stateMachine.goToNextStateHelper();
-    // Should throw because state 3 is the last state
-    await expectThrow(stateMachine.goToNextStateHelper());
+    await stateMachine.goToNextStateHelper(state2);
+    // Should throw because state 2 has no outgoing transitions
+    await expectThrow(stateMachine.goToNextStateHelper(state3));
+  });
+
+  it('should transition to the 1st next state if both have true conditions', async () => {
+    let currentState;
+    currentState = await stateMachine.currentStateId.call();
+    assert.equal(web3.toUtf8(currentState), state0);
+
+    await stateMachine.setDummyCondition(state0, state1);
+    await stateMachine.setDummyCondition(state0, state2);
+
+    await stateMachine.conditionalTransitionHelper();
+    
+    currentState = await stateMachine.currentStateId.call();
+    assert.equal(web3.toUtf8(currentState), state1);
+  });
+
+
+  it('should transition onwards multiple transitions if they have true conditions', async () => {
+    let currentState;
+    currentState = await stateMachine.currentStateId.call();
+    assert.equal(web3.toUtf8(currentState), state0);
+
+    await stateMachine.setDummyCondition(state0, state1);
+    await stateMachine.setDummyCondition(state1, state3);
+
+    await stateMachine.conditionalTransitionHelper();
+    
+    currentState = await stateMachine.currentStateId.call();
+    assert.equal(web3.toUtf8(currentState), state3);
   });
 });

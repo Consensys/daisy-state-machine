@@ -12,7 +12,7 @@ contract StateMachineMock is StateMachine {
     function StateMachineMock() public { 
     }
 
-    function setInitialStateHelper(bytes32 _initialState) internal {
+    function setInitialStateHelper(bytes32 _initialState) public {
         setInitialState(_initialState);
     }
 
@@ -63,6 +63,10 @@ contract StateMachineMock is StateMachine {
     // Helper to test allowing a function
     function allowFunctionHelper(bytes32 _stateId, bytes4 _selector) public {
         allowFunction(_stateId, _selector);
+    }
+
+    function conditionalTransitionHelper() public {
+        conditionalTransitions();
     }
 
 }
