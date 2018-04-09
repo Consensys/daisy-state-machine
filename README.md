@@ -5,7 +5,7 @@
 
 In order to use, build and test the contracts found in this repo, [Truffle](truffleframework.com) version > 4 is needed.
 
-THESE CONTRACTS HAVE NOT BEEN AUDITED, USE WITH CAUTION.
+These contracts have **not** been audited, use them with caution.
 
 ## Usage
 
