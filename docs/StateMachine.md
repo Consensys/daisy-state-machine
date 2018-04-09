@@ -1,48 +1,18 @@
 # State Machine
 
-We implement the State Machine Pattern through the use of a library and abstract contracts. The library handles the state transitions, callbacks and the allowed functions in each stage, while the smart contracts handle conditional transitions and modifiers. 
-
-## Library (StateMachineLib.sol)
-
-### Structs
-
-```
-struct Stage {
-    // The id of the next stage
-    bytes32 nextId;
-
-    // The identifiers for the available functions in each stage
-    mapping(bytes4 => bool) allowedFunctions;
-}
-
-struct State {
-    // The current stage id
-    bytes32 currentStageId;
-
-    // A callback that is called on stage transitions
-    function(bytes32) internal onTransition;
-
-    // Checks if a stage id is valid
-    mapping(bytes32 => bool) validStage;
-
-    // Maps stage ids to their Stage structs
-    mapping(bytes32 => Stage) stages;
-}
-```
-
-The `onTransition` callback is called everytime the state goes to another stage. It receives the id of the new stage.
+We implement the State Machine Pattern through the use of base contracts that are meant to be inherited from. The contracts handle state transitions, callbacks and the allowed functions in each state. 
 
 ## Contracts
 
 ### StateMachine.sol
 
-The contract `StateMachine` stores a State struct and sets the `onTransition` function in the constructor. Other contracts can inherit from this contract, override the transition callbacks and set the stages and transitions between stages. 
+The contract `StateMachine` stores all the state data. Each state is represented by a unique `bytes32 stateId` defined by the user. Each state is mapped to the next state id, the allowed functions in that state, an array of transition callbacks and an array of start conditions.
 
-It also contains an internal function called `startConditions` which receives the id for a stage and returns true if the start conditions for that stage are met. This function is queried when the `conditionalTransitions` function is called, and if it returns `true` for the following stage, the state goes to that stage. Also, multiple state transitions can happen in the same call of the `conditionalTransitions` function if the `startConditions` function returns `true` for multiple stages.
+The `checkAllowed` modifier performs `conditionalTransitions()` and checks that the function is allowed in the current state.
 
 ### TimedStateMachine.sol
 
-The contract `TimedStateMachine` inherits from `StateMachine` and extends its functionalities by adding timestamp based automatic transitions, by overriding the `startConditions` function. This contract also provides the internal functions `setStageStartTime` and `getStageStartTime`.
+The contract `TimedStateMachine` inherits from `StateMachine` and extends its functionalities by adding timestamp based automatic transitions, by adding a `hasStartTimePassed` condition to the startConditions array for each state. This contract also provides the internal function `setStageStartTime` and public function `getStageStartTime`.
 
 ## Diagram
 
