@@ -4,7 +4,6 @@ pragma solidity 0.4.19;
 contract StateMachine {
 
     struct State { 
-        bool validState;
         bytes32 nextStateId;
         mapping(bytes4 => bool) allowedFunctions;
         function() internal[] transitionCallbacks;
@@ -26,11 +25,6 @@ contract StateMachine {
     modifier checkAllowed {
         conditionalTransitions();
         require(states[currentStateId].allowedFunctions[msg.sig]);
-        _;
-    }
-
-    modifier isValidState(bytes32 _stateId) {
-        require(states[_stateId].validState);
         _;
     }
 
@@ -71,13 +65,11 @@ contract StateMachine {
         require(_stateIds[0] != 0);
 
         currentStateId = _stateIds[0];
-        states[currentStateId].validState = true;
 
         for (uint256 i = 1; i < _stateIds.length; i++) {
             require(_stateIds[i] != 0);
 
-            states[_stateIds[i-1]].nextStateId = _stateIds[i];
-            states[_stateIds[i]].validState = true;
+            states[_stateIds[i - 1]].nextStateId = _stateIds[i];
 
             // Check that the state appears only once in the array
             require(states[_stateIds[i]].nextStateId == 0);
@@ -87,13 +79,14 @@ contract StateMachine {
     /// @dev Allow a function in the given state.
     /// @param _stateId The id of the state
     /// @param _functionSelector A function selector (bytes4[keccak256(functionSignature)])
-    function allowFunction(bytes32 _stateId, bytes4 _functionSelector) internal isValidState(_stateId) isNotFinalised {
+    function allowFunction(bytes32 _stateId, bytes4 _functionSelector) internal isNotFinalised {
         states[_stateId].allowedFunctions[_functionSelector] = true;
     }
 
     /// @dev Goes to the next state if possible (if the next state is valid)
-    function goToNextState() internal isValidState(states[currentStateId].nextStateId) {
+    function goToNextState() internal {
         bytes32 next = states[currentStateId].nextStateId;
+        require(next != 0);
 
         currentStateId = next;
         for (uint256 i = 0; i < states[next].transitionCallbacks.length; i++) {
@@ -106,18 +99,19 @@ contract StateMachine {
     ///@dev add a function returning a boolean as a start condition for a state
     ///@param _stateId The ID of the state to add the condition for
     ///@param _condition Start condition function - returns true if a start condition (for a given state ID) is met
-    function addStartCondition(bytes32 _stateId, function(bytes32) internal returns(bool) _condition) internal isValidState(_stateId) isNotFinalised {
+    function addStartCondition(bytes32 _stateId, function(bytes32) internal returns(bool) _condition) internal isNotFinalised {
         states[_stateId].startConditions.push(_condition);
     }
 
     ///@dev add a callback function for a state
     ///@param _stateId The ID of the state to add a callback function for
-    ///@param _callback The callback function to add (if the state is valid)
-    function addCallback(bytes32 _stateId, function() internal _callback) internal isValidState(_stateId) isNotFinalised {
+    ///@param _callback The callback function to add
+    function addCallback(bytes32 _stateId, function() internal _callback) internal isNotFinalised {
         states[_stateId].transitionCallbacks.push(_callback);
     }
 
     function finaliseStateMachine() internal isNotFinalised {
+        require(currentStateId != 0);
         isFinalised = true;
     }
 }
