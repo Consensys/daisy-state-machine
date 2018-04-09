@@ -85,9 +85,8 @@ contract StateMachine {
 
         currentStateId = next;
 
-        function() internal[] storage callbacks = transitionCallbacks[next];
-        for (uint256 i = 0; i < callbacks.length; i++) {
-            callbacks[i]();
+        for (uint256 i = 0; i < transitionCallbacks[next].length; i++) {
+            transitionCallbacks[next][i]();
         }
 
         LogTransition(next, block.number);
