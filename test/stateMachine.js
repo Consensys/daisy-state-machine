@@ -27,6 +27,14 @@ contract('StateMachine', accounts => {
     await expectThrow(stateMachine.setStatesHelper([]));
   });
 
+  it('should not be possible to set duplicated states', async () => {
+    stateMachine = await StateMachineMock.new();
+    await expectThrow(stateMachine.setStatesHelper([state0, state1, state0, state3]));
+    await expectThrow(stateMachine.setStatesHelper([state0, state1, state1, state3]));
+    await expectThrow(stateMachine.setStatesHelper([state0, state0, state0, state0]));
+    await expectThrow(stateMachine.setStatesHelper([state0, state1, state2, state0]));
+  });
+
   it('should be possible to allow a function', async () => {
     await stateMachine.allowFunctionHelper(state0, dummyFunctionSelector);
     await stateMachine.allowFunctionHelper(state1, dummyFunctionSelector);
