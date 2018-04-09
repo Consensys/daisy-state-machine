@@ -13,18 +13,6 @@ contract StateMachine {
 
     mapping(bytes32 => State) states;
 
-    // Maps a stateId to the stateId of the next state
-    //mapping(bytes32 => bytes32) public nextStateId;
-
-    // For each stateId, specify which functions are available
-    //mapping(bytes32 => mapping(bytes4 => bool)) public allowedFunctions;
-
-    // Maps a stateId to an array of callbacks
-    //mapping(bytes32 => function() internal[]) private transitionCallbacks;
-
-    // Maps a stateId to an array of conditions
-    //mapping(bytes32 => function(bytes32) internal returns(bool)[]) private startConditions;
-
     // The current state id
     bytes32 public currentStateId;
 
@@ -42,12 +30,12 @@ contract StateMachine {
     }
 
     modifier isValidState(bytes32 _stateId) {
-        require(states[_stateId].validState == true);
+        require(states[_stateId].validState);
         _;
     }
 
     modifier isNotFinalised {
-        require(isFinalised == false);
+        require(!isFinalised);
         _;
     }
 
@@ -129,7 +117,7 @@ contract StateMachine {
         states[_stateId].transitionCallbacks.push(_callback);
     }
 
-    function finaliseStateMachine() isNotFinalised {
+    function finaliseStateMachine() internal isNotFinalised {
         isFinalised = true;
     }
 }
