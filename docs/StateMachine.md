@@ -1,6 +1,6 @@
 # State Machine
 
-We implement the State Machine Pattern through the use of base contracts that are meant to be inherited from. The contracts handle state transitions, callbacks and the allowed functions in each state. 
+This project consists on a set of smart contracts that implement a linear state machine pattern and are meant to be inherited by other smart contracts. The contracts handle automatic state transitions, transition callbacks and the allowed functions in each state. 
 
 ## Contracts
 

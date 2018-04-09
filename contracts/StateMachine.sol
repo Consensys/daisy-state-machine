@@ -52,53 +52,58 @@ contract StateMachine {
     }
 
     /// @dev Setup the state machine with the given states.
-    /// @param stateIds Array of state ids.
-    function setStates(bytes32[] stateIds) internal {
-        require(stateIds.length > 0);
+    /// @param _stateIds Array of state ids.
+    function setStates(bytes32[] _stateIds) internal {
+        require(_stateIds.length > 0);
         require(currentStateId == 0);
 
-        require(stateIds[0] != 0);
+        require(_stateIds[0] != 0);
 
-        currentStateId = stateIds[0];
+        currentStateId = _stateIds[0];
 
-        for (uint256 i = 1; i < stateIds.length; i++) {
-            require(stateIds[i] != 0);
-            nextStateId[stateIds[i - 1]] = stateIds[i];
+        for (uint256 i = 1; i < _stateIds.length; i++) {
+            require(_stateIds[i] != 0);
+
+            nextStateId[_stateIds[i - 1]] = _stateIds[i];
+
+            // Check that the state appears only once in the array
+            require(nextStateId[_stateIds[i]] == 0);
         }
     }
 
     /// @dev Allow a function in the given state.
-    /// @param stateId The id of the state
-    /// @param functionSelector A function selector (bytes4[keccak256(functionSignature)])
-    function allowFunction(bytes32 stateId, bytes4 functionSelector) internal {
-        allowedFunctions[stateId][functionSelector] = true;
+    /// @param _stateId The id of the state
+    /// @param _functionSelector A function selector (bytes4[keccak256(functionSignature)])
+    function allowFunction(bytes32 _stateId, bytes4 _functionSelector) internal {
+        allowedFunctions[_stateId][_functionSelector] = true;
     }
 
-    /// @dev Goes to the next state if posible (if the next state is valid)
+    /// @dev Goes to the next state if possible (if the next state is valid)
     function goToNextState() internal {
         bytes32 next = nextStateId[currentStateId];
         require(next != 0);
 
         currentStateId = next;
 
-        for (uint256 i = 0; i < transitionCallbacks[next].length; i++) {
-            transitionCallbacks[next][i]();
+        function() internal[] storage callbacks = transitionCallbacks[next];
+        for (uint256 i = 0; i < callbacks.length; i++) {
+            callbacks[i]();
         }
 
         LogTransition(next, block.number);
     }
 
     ///@dev add a function returning a boolean as a start condition for a state
-    ///@param stateId The ID of the state to add the condition for
-    ///@param condition Start condition function - returns true if a start condition (for a given state ID) is met
-    function addStartCondition(bytes32 stateId, function(bytes32) internal returns(bool) condition) internal {
-        startConditions[stateId].push(condition);
+    ///@param _stateId The ID of the state to add the condition for
+    ///@param _condition Start condition function - returns true if a start condition (for a given state ID) is met
+    function addStartCondition(bytes32 _stateId, function(bytes32) internal returns(bool) _condition) internal {
+        startConditions[_stateId].push(_condition);
     }
 
     ///@dev add a callback function for a state
-    ///@param stateId The ID of the state to add a callback function for
-    ///@param callback The callback function to add (if the state is valid)
-    function addCallback(bytes32 stateId, function() internal callback) internal {
-        transitionCallbacks[stateId].push(callback);
+    ///@param _stateId The ID of the state to add a callback function for
+    ///@param _callback The callback function to add (if the state is valid)
+    function addCallback(bytes32 _stateId, function() internal _callback) internal {
+        transitionCallbacks[_stateId].push(_callback);
     }
 }
