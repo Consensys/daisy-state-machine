@@ -1,6 +1,6 @@
 {
   "name": "@tokenfoundry/state-machine",
-  "version": "0.2.4",
+  "version": "1.0.0",
   "description": "Solidity framework to implement a state machine pattern.",
   "repository": "https://github.com/tokenfoundry/state-machine.git",
   "license": "MIT",
