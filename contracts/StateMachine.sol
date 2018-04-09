@@ -4,6 +4,7 @@ pragma solidity 0.4.19;
 contract StateMachine {
 
     struct State { 
+        bool validState;
         bytes32 nextStateId;
         mapping(bytes4 => bool) allowedFunctions;
         function() internal[] transitionCallbacks;
@@ -29,15 +30,17 @@ contract StateMachine {
 
     event LogTransition(bytes32 stateId, uint256 blockNumber);
 
-    function(bytes32) internal returns(bool)[] nextStartConds;
-    function() internal[] nextTransCallbacks;
-
     /* This modifier performs the conditional transitions and checks that the function 
      * to be executed is allowed in the current State
      */
     modifier checkAllowed {
         conditionalTransitions();
         require(states[currentStateId].allowedFunctions[msg.sig]);
+        _;
+    }
+
+    modifier isValidState(bytes32 _stateId) {
+        require(states[_stateId].validState == true);
         _;
     }
 
@@ -51,9 +54,8 @@ contract StateMachine {
         while (next != 0) {
             // If one of the next state's conditions is met, go to this state and continue
             stateChanged = false;
-            nextStartConds = states[next].startConditions;
-            for (uint256 i = 0; i < nextStartConds.length; i++) {
-                if (nextStartConds[i](next)) {
+            for (uint256 i = 0; i < states[next].startConditions.length; i++) {
+                if (states[next].startConditions[i](next)) {
                     goToNextState();
                     next = states[next].nextStateId;
                     stateChanged = true;
@@ -74,11 +76,13 @@ contract StateMachine {
         require(_stateIds[0] != 0);
 
         currentStateId = _stateIds[0];
+        states[currentStateId].validState = true;
 
         for (uint256 i = 1; i < _stateIds.length; i++) {
             require(_stateIds[i] != 0);
 
             states[_stateIds[i-1]].nextStateId = _stateIds[i];
+            states[_stateIds[i]].validState = true;
 
             // Check that the state appears only once in the array
             require(states[_stateIds[i]].nextStateId == 0);
@@ -88,19 +92,17 @@ contract StateMachine {
     /// @dev Allow a function in the given state.
     /// @param _stateId The id of the state
     /// @param _functionSelector A function selector (bytes4[keccak256(functionSignature)])
-    function allowFunction(bytes32 _stateId, bytes4 _functionSelector) internal {
+    function allowFunction(bytes32 _stateId, bytes4 _functionSelector) internal isValidState(_stateId) {
         states[_stateId].allowedFunctions[_functionSelector] = true;
     }
 
     /// @dev Goes to the next state if possible (if the next state is valid)
-    function goToNextState() internal {
+    function goToNextState() internal isValidState(states[currentStateId].nextStateId) {
         bytes32 next = states[currentStateId].nextStateId;
-        require(next != 0);
 
         currentStateId = next;
-        nextTransCallbacks = states[next].transitionCallbacks;
-        for (uint256 i = 0; i < nextTransCallbacks.length; i++) {
-            nextTransCallbacks[i]();
+        for (uint256 i = 0; i < states[next].transitionCallbacks.length; i++) {
+            states[next].transitionCallbacks[i]();
         }
 
         LogTransition(next, block.number);
@@ -109,14 +111,14 @@ contract StateMachine {
     ///@dev add a function returning a boolean as a start condition for a state
     ///@param _stateId The ID of the state to add the condition for
     ///@param _condition Start condition function - returns true if a start condition (for a given state ID) is met
-    function addStartCondition(bytes32 _stateId, function(bytes32) internal returns(bool) _condition) internal {
+    function addStartCondition(bytes32 _stateId, function(bytes32) internal returns(bool) _condition) internal isValidState(_stateId) {
         states[_stateId].startConditions.push(_condition);
     }
 
     ///@dev add a callback function for a state
     ///@param _stateId The ID of the state to add a callback function for
     ///@param _callback The callback function to add (if the state is valid)
-    function addCallback(bytes32 _stateId, function() internal _callback) internal {
+    function addCallback(bytes32 _stateId, function() internal _callback) internal isValidState(_stateId) {
         states[_stateId].transitionCallbacks.push(_callback);
     }
 }
