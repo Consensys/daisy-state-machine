@@ -101,6 +101,12 @@ contract('StateMachine', accounts => {
     assert.isTrue(isFinalised);
   });
 
+  it('should not be possible to allow a function after finalising the state machine', async () => {
+    await stateMachine.allowFunctionHelper(state2, dummyFunctionSelector);
+    await stateMachine.finaliseSMHelper();
+    await expectThrow(stateMachine.allowFunctionHelper(state3, dummyFunctionSelector));
+  });
+
   it('should automatically go to a state with a condition that evaluates to true', async () => {
     let currentState;
     currentState = await stateMachine.currentStateId.call();

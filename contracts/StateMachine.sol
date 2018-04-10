@@ -58,7 +58,7 @@ contract StateMachine {
 
     /// @dev Setup the state machine with the given states.
     /// @param _stateIds Array of state ids.
-    function setStates(bytes32[] _stateIds) internal isNotFinalised {
+    function setStates(bytes32[] _stateIds) internal {
         require(_stateIds.length > 0);
         require(currentStateId == 0);
 
