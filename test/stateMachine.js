@@ -150,6 +150,12 @@ contract('StateMachine', accounts => {
     assert.isTrue(callbackCalled);
   });
 
+  it('should not be possible to add a callback once finalised', async() => {
+    await stateMachine.setDummyCallback(state2);
+    await stateMachine.finaliseSMHelper();
+    await expectThrow(stateMachine.setDummyCallback(state1));
+  });
+
   it('should not be possible to go to next state when in the last state', async () => {
     // Go to state 1
     await stateMachine.goToNextStateHelper();
