@@ -18,11 +18,11 @@ contract('StateMachine', accounts => {
     dummyFunctionSelector = await stateMachine.dummyFunctionSelector.call();
   });
 
-  it('should not be possible to set states if there is already one', async () => {
+  it('should not be possible to set states if they\'ve already been set', async () => {
     await expectThrow(stateMachine.setStatesHelper([invalidState]));
   });
 
-  it('should not be possible to use an empty array for setting the states', async () => {
+  it('should not be possible to use an empty array to set the states', async () => {
     stateMachine = await StateMachineMock.new();
     await expectThrow(stateMachine.setStatesHelper([]));
   });
@@ -90,6 +90,17 @@ contract('StateMachine', accounts => {
     assert.equal(web3.toUtf8(currentState), state3);
   });
 
+  it('should not be possible to finalise the state machine before setting states', async () => {
+    stateMachine = await StateMachineMock.new();
+    await expectThrow(stateMachine.finaliseSMHelper());
+  });
+
+  it('should be possible to finalise the state machine after setting states', async () => {
+    await stateMachine.finaliseSMHelper();
+    let isFinalised = await stateMachine.isFinalised.call();
+    assert.isTrue(isFinalised);
+  });
+
   it('should automatically go to a state with a condition that evaluates to true', async () => {
     let currentState;
     currentState = await stateMachine.currentStateId.call();
@@ -101,7 +112,6 @@ contract('StateMachine', accounts => {
     assert.equal(web3.toUtf8(currentState), state0);
 
     await stateMachine.setDummyCondition(state1);
-    //THIS LINE THROWS THE ERROR
     await stateMachine.conditionalTransitions();
     
     currentState = await stateMachine.currentStateId.call();
@@ -120,7 +130,13 @@ contract('StateMachine', accounts => {
     assert.equal(web3.toUtf8(currentState), state2);
   });
 
-  it('should be possible to set a callback for a state', async () => {
+  it('should not be possible to add a start condition once finalised', async() => {
+    await stateMachine.setDummyCondition(state1);
+    await stateMachine.finaliseSMHelper();
+    await expectThrow(stateMachine.setDummyCondition(state2));
+  });
+
+  it('should be possible to set a callback for a state before the state machine is finalised', async () => {
     let callbackCalled;
     callbackCalled = await stateMachine.callbackCalled.call();
     assert.isFalse(callbackCalled);
@@ -128,7 +144,7 @@ contract('StateMachine', accounts => {
     await stateMachine.setDummyCallback(state1);
     callbackCalled = await stateMachine.callbackCalled.call();
     assert.isFalse(callbackCalled);
-    //THIS LINE THROWS THE ERROR
+
     await stateMachine.goToNextStateHelper();
     callbackCalled = await stateMachine.callbackCalled.call();
     assert.isTrue(callbackCalled);
@@ -144,4 +160,5 @@ contract('StateMachine', accounts => {
     // Should throw because state 3 is the last state
     await expectThrow(stateMachine.goToNextStateHelper());
   });
+
 });

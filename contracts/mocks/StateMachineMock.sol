@@ -60,4 +60,8 @@ contract StateMachineMock is StateMachine {
         allowFunction(stateId, selector);
     }
 
+    function finaliseSMHelper() public {
+        finaliseStateMachine();
+    }
+
 }
