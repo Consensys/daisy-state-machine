@@ -67,4 +67,24 @@ contract('TimedStateMachine', accounts => {
     assert.equal(currentState, state1);
 
   });
+
+  it('should not be possible to add a *new* start time condition after finalising', async () => {
+    await timedStateMachine.finaliseSMHelper();
+    const timestamp = (await latestTime()) + duration.weeks(1);
+    await expectThrow(timedStateMachine.setStateStartTimeHelper(state1, timestamp));
+  });
+
+  it('should be possible to alter a state\'s start time condition after finalising', async () => {
+    let timestamp = (await latestTime()) + duration.weeks(1);
+    //add a condition
+    await timedStateMachine.setStateStartTimeHelper(state1, timestamp);
+    //finalise
+    await timedStateMachine.finaliseSMHelper();
+    timestamp = timestamp + duration.weeks(2);
+    //now change the same state's start time successfully
+    await timedStateMachine.setStateStartTimeHelper(state1, timestamp);
+    //but cant add a new condition to a different state
+    await expectThrow(timedStateMachine.setStateStartTimeHelper(state2, timestamp));
+  });
+
 });
