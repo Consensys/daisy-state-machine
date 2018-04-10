@@ -138,8 +138,21 @@ contract('StateMachine', accounts => {
 
   it('should not be possible to add a start condition once finalised', async() => {
     await stateMachine.setDummyCondition(state1);
+    await stateMachine.conditionalTransitions();
+    
+    let currentState;
+    currentState = await stateMachine.currentStateId.call();
+    assert.equal(web3.toUtf8(currentState), state1);
+
     await stateMachine.finaliseSMHelper();
     await expectThrow(stateMachine.setDummyCondition(state2));
+  });
+
+  it('should be possible to finalise the state machine not in the initial state', async () => {
+
+    await stateMachine.finaliseSMHelper();
+    let isFinalised = await stateMachine.isFinalised.call();
+    assert.isTrue(isFinalised);
   });
 
   it('should be possible to set a callback for a state before the state machine is finalised', async () => {
