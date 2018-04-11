@@ -54,39 +54,39 @@ contract('StateMachine', accounts => {
   // TODO: review this.. it improves coverage but it doesn't seem necessary
   it('should not perform conditional transitions at any state', async () => {
     let currentState;
-    currentState = await stateMachine.currentStateId.call();
+    currentState = await stateMachine.getCurrentStateId.call();
     assert.equal(web3.toUtf8(currentState), state0);
 
     await stateMachine.conditionalTransitions();
 
-    currentState = await stateMachine.currentStateId.call();
+    currentState = await stateMachine.getCurrentStateId.call();
     assert.equal(web3.toUtf8(currentState), state0);
 
     await stateMachine.goToNextStateHelper();
-    currentState = await stateMachine.currentStateId.call();
+    currentState = await stateMachine.getCurrentStateId.call();
     assert.equal(web3.toUtf8(currentState), state1);
 
     await stateMachine.conditionalTransitions();
 
-    currentState = await stateMachine.currentStateId.call();
+    currentState = await stateMachine.getCurrentStateId.call();
     assert.equal(web3.toUtf8(currentState), state1);
 
     await stateMachine.goToNextStateHelper();
-    currentState = await stateMachine.currentStateId.call();
+    currentState = await stateMachine.getCurrentStateId.call();
     assert.equal(web3.toUtf8(currentState), state2);
 
     await stateMachine.conditionalTransitions();
 
-    currentState = await stateMachine.currentStateId.call();
+    currentState = await stateMachine.getCurrentStateId.call();
     assert.equal(web3.toUtf8(currentState), state2);
 
     await stateMachine.goToNextStateHelper();
-    currentState = await stateMachine.currentStateId.call();
+    currentState = await stateMachine.getCurrentStateId.call();
     assert.equal(web3.toUtf8(currentState), state3);
 
     await stateMachine.conditionalTransitions();
 
-    currentState = await stateMachine.currentStateId.call();
+    currentState = await stateMachine.getCurrentStateId.call();
     assert.equal(web3.toUtf8(currentState), state3);
   });
 
@@ -96,9 +96,9 @@ contract('StateMachine', accounts => {
   });
 
   it('should be possible to finalise the state machine after setting states', async () => {
-    await stateMachine.finaliseSMHelper();
-    let isFinalised = await stateMachine.isFinalised.call();
-    assert.isTrue(isFinalised);
+    const result = await stateMachine.finaliseSMHelper();
+    const { finalisedStateId } = result.logs[0].args;
+    assert.isTrue(finalisedStateId.equals(state0), "finalisation unsuccessful");
   });
 
   it('should not be possible to allow a function after finalising the state machine', async () => {
@@ -109,30 +109,30 @@ contract('StateMachine', accounts => {
 
   it('should automatically go to a state with a condition that evaluates to true', async () => {
     let currentState;
-    currentState = await stateMachine.currentStateId.call();
+    currentState = await stateMachine.getCurrentStateId.call();
     assert.equal(web3.toUtf8(currentState), state0);
 
     await stateMachine.conditionalTransitions();
 
-    currentState = await stateMachine.currentStateId.call();
+    currentState = await stateMachine.getCurrentStateId.call();
     assert.equal(web3.toUtf8(currentState), state0);
 
     await stateMachine.setDummyCondition(state1);
     await stateMachine.conditionalTransitions();
     
-    currentState = await stateMachine.currentStateId.call();
+    currentState = await stateMachine.getCurrentStateId.call();
     assert.equal(web3.toUtf8(currentState), state1);
 
     await stateMachine.setDummyVariableCondition(state2);
     await stateMachine.conditionalTransitions();
 
-    currentState = await stateMachine.currentStateId.call();
+    currentState = await stateMachine.getCurrentStateId.call();
     assert.equal(web3.toUtf8(currentState), state1);
 
     await stateMachine.setCondition(true);
     await stateMachine.conditionalTransitions();
 
-    currentState = await stateMachine.currentStateId.call();
+    currentState = await stateMachine.getCurrentStateId.call();
     assert.equal(web3.toUtf8(currentState), state2);
   });
 
@@ -141,7 +141,7 @@ contract('StateMachine', accounts => {
     await stateMachine.conditionalTransitions();
     
     let currentState;
-    currentState = await stateMachine.currentStateId.call();
+    currentState = await stateMachine.getCurrentStateId.call();
     assert.equal(web3.toUtf8(currentState), state1);
 
     await stateMachine.finaliseSMHelper();
@@ -149,10 +149,10 @@ contract('StateMachine', accounts => {
   });
 
   it('should be possible to finalise the state machine not in the initial state', async () => {
-
-    await stateMachine.finaliseSMHelper();
-    let isFinalised = await stateMachine.isFinalised.call();
-    assert.isTrue(isFinalised);
+    stateMachine.goToNextStateHelper();
+    const result = await stateMachine.finaliseSMHelper();
+    const { finalisedStateId } = result.logs[0].args;
+    assert.isTrue(finalisedStateId.equals(state1), "finalisation unsuccessful");
   });
 
   it('should be possible to set a callback for a state before the state machine is finalised', async () => {

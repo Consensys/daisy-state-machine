@@ -56,13 +56,13 @@ contract('TimedStateMachine', accounts => {
 
     await timedStateMachine.conditionalTransitions();
 
-    let currentState = web3.toUtf8(await timedStateMachine.currentStateId.call());
+    let currentState = web3.toUtf8(await timedStateMachine.getCurrentStateId.call());
 
     assert.equal(currentState, state1);
 
     await timedStateMachine.conditionalTransitions(); //calling it again should not affect the expected result
 
-    currentState = web3.toUtf8(await timedStateMachine.currentStateId.call());
+    currentState = web3.toUtf8(await timedStateMachine.getCurrentStateId.call());
 
     assert.equal(currentState, state1);
 
