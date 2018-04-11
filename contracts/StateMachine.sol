@@ -16,7 +16,7 @@ contract StateMachine {
     bytes32 private currentStateId;
 
     event LogTransition(bytes32 stateId, uint256 blockNumber);
-    event LogMachineFinalisedInState(bytes32 stateId);
+    event LogStateMachineFinalised();
 
     bool private isFinalised;
 
@@ -119,6 +119,6 @@ contract StateMachine {
     function finaliseStateMachine() internal isNotFinalised {
         require(currentStateId != 0);
         isFinalised = true;
-        LogMachineFinalisedInState(currentStateId);
+        LogStateMachineFinalised();
     }
 }

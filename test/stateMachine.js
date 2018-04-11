@@ -97,8 +97,9 @@ contract('StateMachine', accounts => {
 
   it('should be possible to finalise the state machine after setting states', async () => {
     const result = await stateMachine.finaliseSMHelper();
-    const { finalisedStateId } = result.logs[0].args;
-    assert.isTrue(finalisedStateId.equals(state0), "finalisation unsuccessful");
+    const finalisedEvent = result.logs[0];
+    assert.isTrue(finalisedEvent !== undefined);
+    assert.equal(finalisedEvent.event, 'LogStateMachineFinalised', 'finalisation event not correct');
   });
 
   it('should not be possible to allow a function after finalising the state machine', async () => {
@@ -151,8 +152,9 @@ contract('StateMachine', accounts => {
   it('should be possible to finalise the state machine not in the initial state', async () => {
     stateMachine.goToNextStateHelper();
     const result = await stateMachine.finaliseSMHelper();
-    const { finalisedStateId } = result.logs[0].args;
-    assert.isTrue(finalisedStateId.equals(state1), "finalisation unsuccessful");
+    const finalisedEvent = result.logs[0];
+    assert.isTrue(finalisedEvent !== undefined);
+    assert.equal(finalisedEvent.event, 'LogStateMachineFinalised', 'finalisation event not correct');
   });
 
   it('should be possible to set a callback for a state before the state machine is finalised', async () => {
