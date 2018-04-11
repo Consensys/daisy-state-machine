@@ -17,19 +17,12 @@ contract StateMachine {
 
     event LogTransition(bytes32 stateId, uint256 blockNumber);
 
-    bool public isFinalised;
-
     /* This modifier performs the conditional transitions and checks that the function 
      * to be executed is allowed in the current State
      */
     modifier checkAllowed {
         conditionalTransitions();
         require(states[currentStateId].allowedFunctions[msg.sig]);
-        _;
-    }
-
-    modifier isNotFinalised {
-        require(!isFinalised);
         _;
     }
 
@@ -58,7 +51,7 @@ contract StateMachine {
 
     /// @dev Setup the state machine with the given states.
     /// @param _stateIds Array of state ids.
-    function setStates(bytes32[] _stateIds) internal isNotFinalised {
+    function setStates(bytes32[] _stateIds) internal {
         require(_stateIds.length > 0);
         require(currentStateId == 0);
 
@@ -79,7 +72,7 @@ contract StateMachine {
     /// @dev Allow a function in the given state.
     /// @param _stateId The id of the state
     /// @param _functionSelector A function selector (bytes4[keccak256(functionSignature)])
-    function allowFunction(bytes32 _stateId, bytes4 _functionSelector) internal isNotFinalised {
+    function allowFunction(bytes32 _stateId, bytes4 _functionSelector) internal {
         states[_stateId].allowedFunctions[_functionSelector] = true;
     }
 
@@ -99,19 +92,15 @@ contract StateMachine {
     ///@dev add a function returning a boolean as a start condition for a state
     ///@param _stateId The ID of the state to add the condition for
     ///@param _condition Start condition function - returns true if a start condition (for a given state ID) is met
-    function addStartCondition(bytes32 _stateId, function(bytes32) internal returns(bool) _condition) internal isNotFinalised {
+    function addStartCondition(bytes32 _stateId, function(bytes32) internal returns(bool) _condition) internal {
         states[_stateId].startConditions.push(_condition);
     }
 
     ///@dev add a callback function for a state
     ///@param _stateId The ID of the state to add a callback function for
     ///@param _callback The callback function to add
-    function addCallback(bytes32 _stateId, function() internal _callback) internal isNotFinalised {
+    function addCallback(bytes32 _stateId, function() internal _callback) internal {
         states[_stateId].transitionCallbacks.push(_callback);
     }
 
-    function finaliseStateMachine() internal isNotFinalised {
-        require(currentStateId != 0);
-        isFinalised = true;
-    }
 }
