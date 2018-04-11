@@ -13,7 +13,7 @@ contract StateMachine {
     mapping(bytes32 => State) states;
 
     // The current state id
-    bytes32 public currentStateId;
+    bytes32 private currentStateId;
 
     event LogTransition(bytes32 stateId, uint256 blockNumber);
 
@@ -48,6 +48,11 @@ contract StateMachine {
             if (!stateChanged) break;
         }
     }
+
+    function getCurrentStateId() view public returns(bytes32) {
+        return currentStateId;
+    }
+
 
     /// @dev Setup the state machine with the given states.
     /// @param _stateIds Array of state ids.
