@@ -3,10 +3,10 @@ pragma solidity 0.4.19;
 
 contract StateMachine {
 
-    // a function that must be performed when transitioning into the new state
+    // mapping transitionId to functions that must be performed when transitioning into the new state
     mapping(bytes32 => function() internal[]) transitionEffects;
 
-    // condition which must be true to perform a transition
+    // mapping transitionId to start condition which must be true to perform a transition
     mapping(bytes32 => function(bytes32) internal returns(bool)[]) startConditions;
 
     // mapping transition id to bool
