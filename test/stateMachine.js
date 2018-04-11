@@ -5,6 +5,7 @@ const StateMachineMock = artifacts.require('StateMachineMock');
 contract('StateMachine', accounts => {
   let stateMachine;
   const invalidState = 'invalid';
+  const zeroState = 0;
   const state0 = 'STATE0';
   const state1 = 'STATE1';
   const state2 = 'STATE2';
@@ -33,6 +34,20 @@ contract('StateMachine', accounts => {
     await expectThrow(stateMachine.setStatesHelper([state0, state1, state1, state3]));
     await expectThrow(stateMachine.setStatesHelper([state0, state0, state0, state0]));
     await expectThrow(stateMachine.setStatesHelper([state0, state1, state2, state0]));
+  });
+
+  it('should not be possible to set states if the initial stateId is 0', async () => {
+    stateMachine = await StateMachineMock.new();
+    await expectThrow(stateMachine.setStatesHelper([zeroState, state0, state1]));
+  });
+
+  it('should not be possible to set the states if any later stateId is 0', async () => {
+    stateMachine = await StateMachineMock.new();
+    await expectThrow(stateMachine.setStatesHelper([state1, state2, zeroState, state3]));
+    //no states should now be set, so the current stateId should not have been set
+    let currentState;
+    currentState = await stateMachine.getCurrentStateId.call();
+    assert.equal(web3.toUtf8(currentState), 0);
   });
 
   it('should be possible to allow a function', async () => {
