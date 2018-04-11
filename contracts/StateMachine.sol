@@ -13,11 +13,12 @@ contract StateMachine {
     mapping(bytes32 => State) states;
 
     // The current state id
-    bytes32 public currentStateId;
+    bytes32 private currentStateId;
 
     event LogTransition(bytes32 stateId, uint256 blockNumber);
+    event LogStateMachineFinalised();
 
-    bool public isFinalised;
+    bool private isFinalised;
 
     /* This modifier performs the conditional transitions and checks that the function 
      * to be executed is allowed in the current State
@@ -56,9 +57,14 @@ contract StateMachine {
         }
     }
 
+    function getCurrentStateId() view public returns(bytes32) {
+        return currentStateId;
+    }
+
+
     /// @dev Setup the state machine with the given states.
     /// @param _stateIds Array of state ids.
-    function setStates(bytes32[] _stateIds) internal isNotFinalised {
+    function setStates(bytes32[] _stateIds) internal {
         require(_stateIds.length > 0);
         require(currentStateId == 0);
 
@@ -113,5 +119,6 @@ contract StateMachine {
     function finaliseStateMachine() internal isNotFinalised {
         require(currentStateId != 0);
         isFinalised = true;
+        LogStateMachineFinalised();
     }
 }

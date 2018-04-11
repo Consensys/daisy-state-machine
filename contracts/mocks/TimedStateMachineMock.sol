@@ -18,4 +18,8 @@ contract TimedStateMachineMock is TimedStateMachine {
     function setStateStartTimeHelper(bytes32 stateId, uint256 timestamp) public {
         setStateStartTime(stateId, timestamp);
     }
+
+    function finaliseSMHelper() public {
+        finaliseStateMachine();
+    }
 }
