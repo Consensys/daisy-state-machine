@@ -1,4 +1,4 @@
-pragma solidity 0.4.19;
+pragma solidity 0.4.23;
 
 import "./StateMachine.sol";
 
@@ -6,7 +6,7 @@ import "./StateMachine.sol";
 /// @title A contract that implements the state machine pattern and adds time dependant transitions.
 contract TimedStateMachine is StateMachine {
 
-    event LogSetStateStartTime(bytes32 indexed _stateId, uint256 _startTime);
+    event SetStateStartTime(bytes32 indexed _stateId, uint256 _startTime);
 
     // Stores the start timestamp for each state (the value is 0 if the state doesn't have a start timestamp).
     mapping(bytes32 => uint256) private startTime;
@@ -29,7 +29,7 @@ contract TimedStateMachine is StateMachine {
 
         startTime[_stateId] = _timestamp;
 
-        LogSetStateStartTime(_stateId, _timestamp);
+        emit SetStateStartTime(_stateId, _timestamp);
     }
 
     function hasStartTimePassed(bytes32 _stateId) internal returns(bool) {

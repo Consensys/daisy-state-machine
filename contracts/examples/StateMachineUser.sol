@@ -1,4 +1,4 @@
-pragma solidity 0.4.19;
+pragma solidity 0.4.23;
 
 import "../TimedStateMachine.sol";
 
@@ -11,7 +11,7 @@ contract StateMachineUser is TimedStateMachine {
     bytes32 constant STATE4 = "state4";
     bytes32[] states = [STATE1, STATE2, STATE3, STATE4];
 
-    function StateMachineUser() public {
+    constructor() public {
         setupStates();
     }
 

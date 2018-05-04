@@ -2472,8 +2472,8 @@ home-or-tmp@^2.0.0:
     os-tmpdir "^1.0.1"
 
 hosted-git-info@^2.1.4:
-  version "2.5.0"
-  resolved "https://registry.yarnpkg.com/hosted-git-info/-/hosted-git-info-2.5.0.tgz#6d60e34b3abbc8313062c3b798ef8d901a07af3c"
+  version "2.6.0"
+  resolved "https://registry.yarnpkg.com/hosted-git-info/-/hosted-git-info-2.6.0.tgz#23235b29ab230c576aab0d4f13fc046b0b038222"
 
 http-signature@~1.1.0:
   version "1.1.1"
@@ -4353,9 +4353,9 @@ sol-explore@^1.6.2:
   version "1.6.2"
   resolved "https://registry.yarnpkg.com/sol-explore/-/sol-explore-1.6.2.tgz#43ae8c419fd3ac056a05f8a9d1fb1022cd41ecc2"
 
-solc@0.4.19:
-  version "0.4.19"
-  resolved "https://registry.yarnpkg.com/solc/-/solc-0.4.19.tgz#1af1c4c292a0365a6977d4cbe3fbee7139b4b561"
+solc@0.4.23:
+  version "0.4.23"
+  resolved "https://registry.yarnpkg.com/solc/-/solc-0.4.23.tgz#54a0ff4015827b32fddb62c0a418b5247310a58e"
   dependencies:
     fs-extra "^0.30.0"
     memorystream "^0.3.1"
@@ -4745,12 +4745,12 @@ trim@0.0.1:
   resolved "https://registry.yarnpkg.com/trim/-/trim-0.0.1.tgz#5858547f6b290757ee95cccc666fb50084c460dd"
 
 truffle@^4.1.0:
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/truffle/-/truffle-4.1.0.tgz#2a4e13f86a0aaf816721f060d7e95844c6e8963c"
+  version "4.1.8"
+  resolved "https://registry.yarnpkg.com/truffle/-/truffle-4.1.8.tgz#b0b9175e0270145999567a3f0a2337c914a23a9c"
   dependencies:
     mocha "^3.4.2"
     original-require "^1.0.1"
-    solc "0.4.19"
+    solc "0.4.23"
 
 tty-browserify@0.0.0:
   version "0.0.0"
