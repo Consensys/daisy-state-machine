@@ -1,4 +1,4 @@
-pragma solidity 0.4.19;
+pragma solidity 0.4.23;
 
 import "../../contracts/TimedStateMachine.sol";
 
@@ -10,7 +10,7 @@ contract TimedStateMachineMock is TimedStateMachine {
     bytes32 public constant STATE3 = "STATE3";
     bytes32[] public states = [STATE0, STATE1, STATE2, STATE3];
 
-    function TimedStateMachineMock() public { 
+    constructor() public { 
         setStates(states);
     }
 

@@ -1,4 +1,4 @@
-pragma solidity 0.4.19;
+pragma solidity 0.4.23;
 
 import "../../contracts/StateMachine.sol";
 
@@ -9,7 +9,7 @@ contract StateMachineMock is StateMachine {
     bool public condition = false;
     bool public callbackCalled = false;
 
-    function StateMachineMock() public { 
+    constructor() public { 
     }
 
     function setStatesHelper(bytes32[] _states) public {

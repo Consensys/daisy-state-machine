@@ -1,4 +1,4 @@
-pragma solidity 0.4.19;
+pragma solidity 0.4.23;
 
 
 contract StateMachine {
@@ -15,7 +15,7 @@ contract StateMachine {
     // The current state id
     bytes32 private currentStateId;
 
-    event LogTransition(bytes32 stateId, uint256 blockNumber);
+    event Transition(bytes32 stateId, uint256 blockNumber);
 
     /* This modifier performs the conditional transitions and checks that the function 
      * to be executed is allowed in the current State
@@ -91,7 +91,7 @@ contract StateMachine {
             states[next].transitionCallbacks[i]();
         }
 
-        LogTransition(next, block.number);
+        emit Transition(next, block.number);
     }
 
     ///@dev add a function returning a boolean as a start condition for a state
