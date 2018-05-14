@@ -19,11 +19,11 @@ contract StateMachineMock is StateMachine {
     function dummyFunction() public checkAllowed {
     }
 
-    function dummyCondition(bytes32) internal returns(bool) {
+    function dummyCondition(bytes32) internal view returns(bool) {
         return true;
     }
 
-    function dummyVariableCondition(bytes32) internal returns(bool) {
+    function dummyVariableCondition(bytes32) internal view returns(bool) {
         return condition;
     }
 

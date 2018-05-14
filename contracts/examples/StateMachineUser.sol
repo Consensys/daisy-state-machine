@@ -52,7 +52,7 @@ contract StateMachineUser is TimedStateMachine {
     function onState2() internal { /* Do something */ }
     function onState3() internal { /* Do something */ }
 
-    function shouldState4Start(bytes32) internal returns(bool) {
+    function shouldState4Start(bytes32) internal view returns(bool) {
         return true;
     }
 

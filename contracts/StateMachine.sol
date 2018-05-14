@@ -7,7 +7,7 @@ contract StateMachine {
         bytes32 nextStateId;
         mapping(bytes4 => bool) allowedFunctions;
         function() internal[] transitionCallbacks;
-        function(bytes32) internal returns(bool)[] startConditions;
+        function(bytes32) internal view returns(bool)[] startConditions;
     }
 
     mapping(bytes32 => State) states;
@@ -97,7 +97,7 @@ contract StateMachine {
     ///@dev add a function returning a boolean as a start condition for a state
     ///@param _stateId The ID of the state to add the condition for
     ///@param _condition Start condition function - returns true if a start condition (for a given state ID) is met
-    function addStartCondition(bytes32 _stateId, function(bytes32) internal returns(bool) _condition) internal {
+    function addStartCondition(bytes32 _stateId, function(bytes32) internal view returns(bool) _condition) internal {
         states[_stateId].startConditions.push(_condition);
     }
 

@@ -32,7 +32,7 @@ contract TimedStateMachine is StateMachine {
         emit SetStateStartTime(_stateId, _timestamp);
     }
 
-    function hasStartTimePassed(bytes32 _stateId) internal returns(bool) {
+    function hasStartTimePassed(bytes32 _stateId) internal view returns(bool) {
         return startTime[_stateId] <= block.timestamp;
     }
 
