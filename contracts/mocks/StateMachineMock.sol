@@ -12,18 +12,14 @@ contract StateMachineMock is StateMachine {
     constructor() public { 
     }
 
-    function setStatesHelper(bytes32[] _states) public {
-        setStates(_states);
-    }
-
     function dummyFunction() public checkAllowed {
     }
 
-    function dummyCondition(bytes32) internal returns(bool) {
+    function dummyCondition(bytes32, bytes32) internal returns(bool) {
         return true;
     }
 
-    function dummyVariableCondition(bytes32) internal returns(bool) {
+    function dummyVariableCondition(bytes32, bytes32) internal returns(bool) {
         return condition;
     }
 
@@ -32,13 +28,13 @@ contract StateMachineMock is StateMachine {
     }
 
     // Helper to test going to next state
-    function goToNextStateHelper() public {
-        goToNextState();
+    function goToStateHelper(bytes32 _stateId) public {
+        goToState(_stateId);
     }
 
     // Sets the dummy condition for a state
-    function setDummyCondition(bytes32 stateId) public {
-        addStartCondition(stateId, dummyCondition);
+    function setDummyCondition(bytes32 _fromId, bytes32 _toId) public {
+        addStartCondition(_fromId, _toId, dummyCondition);
     }
 
     function setCondition(bool _condition) public {
@@ -46,13 +42,17 @@ contract StateMachineMock is StateMachine {
     }
 
     // Sets the dummy callback condition for a state
-    function setDummyVariableCondition(bytes32 stateId) public {
-        addStartCondition(stateId, dummyVariableCondition);
+    function setDummyVariableCondition(bytes32 _fromId, bytes32 _toId) public {
+        addStartCondition(_fromId, _toId, dummyVariableCondition);
     }
 
     // Sets the dummy callback for a state
-    function setDummyCallback(bytes32 stateId) public {
-        addCallback(stateId, dummyCallback);
+    function setDummyCallback(bytes32 _fromId, bytes32 _toId) public {
+        addCallback(_fromId, _toId, dummyCallback);
+    }
+    
+    function setDummyCallback(bytes32 _stateId) public {
+        addCallback(_stateId, dummyCallback);
     }
 
     // Helper to test allowing a function
