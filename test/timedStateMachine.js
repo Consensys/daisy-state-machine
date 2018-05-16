@@ -17,40 +17,39 @@ contract('TimedStateMachine', accounts => {
 
   it('should not be possible to set a start time lower than the current one', async () => {
     const timestamp = (await latestTime()) - duration.weeks(1);
-    await expectThrow(timedStateMachine.setStateStartTimeHelper(state0, timestamp));
-    await expectThrow(timedStateMachine.setStateStartTimeHelper(state1, timestamp));
-    await expectThrow(timedStateMachine.setStateStartTimeHelper(state2, timestamp));
-    await expectThrow(timedStateMachine.setStateStartTimeHelper(state3, timestamp));
+    await expectThrow(timedStateMachine.setStartTimeHelper(state0, state1, timestamp));
+    await expectThrow(timedStateMachine.setStartTimeHelper(state1, state2, timestamp));
+    await expectThrow(timedStateMachine.setStartTimeHelper(state2, state3, timestamp));
   });
 
   it('should be possible to set a start time', async () => {
     const timestamp = (await latestTime()) + duration.weeks(1);
 
-    await timedStateMachine.setStateStartTimeHelper(state1, timestamp);
+    await timedStateMachine.setStartTimeHelper(state0, state1, timestamp);
 
-    const _timestamp = await timedStateMachine.getStateStartTime.call(state1);
+    const _timestamp = await timedStateMachine.getStartTime.call(state0, state1);
 
     assert.equal(timestamp, _timestamp);
   });
 
-  it('should not be possible to set a start time twice for the same state', async () => {
+  it('should be possible to set a start time twice for the same state', async () => {
     const timestamp = (await latestTime()) + duration.weeks(1);
 
-    await timedStateMachine.setStateStartTimeHelper(state1, timestamp);
+    await timedStateMachine.setStartTimeHelper(state0, state1, timestamp);
 
-    let _timestamp = await timedStateMachine.getStateStartTime.call(state1);
+    let _timestamp = await timedStateMachine.getStartTime.call(state0, state1);
 
     assert.equal(timestamp, _timestamp);
-    await timedStateMachine.setStateStartTimeHelper(state1, timestamp + 1);
+    await timedStateMachine.setStartTimeHelper(state0, state1, timestamp + 1);
 
-    _timestamp = await timedStateMachine.getStateStartTime.call(state1);
+    _timestamp = await timedStateMachine.getStartTime.call(state0, state1);
     assert.equal(timestamp + 1, _timestamp);
   });
 
   it('should transition to the next state if the set timestamp is reached', async () => {
     const timestamp = (await latestTime()) + duration.weeks(1);
 
-    await timedStateMachine.setStateStartTimeHelper(state1, timestamp);
+    await timedStateMachine.setStartTimeHelper(state0, state1, timestamp);
 
     await increaseTime(duration.weeks(2));
 

@@ -2,6 +2,7 @@ pragma solidity 0.4.23;
 
 
 contract StateMachine {
+    bytes32 public constant FALLBACK = keccak256("fallback");
 
     // state id => (function selector => is allowed)
     mapping(bytes32 => mapping(bytes4 => bool)) allowedFunctions;
@@ -16,7 +17,7 @@ contract StateMachine {
     mapping(bytes32 => mapping(bytes32 => function(bytes32, bytes32) internal returns(bool)[])) startConditions;
 
     // Maps a state id to a list of state ids for which startConditions have been added
-    mapping(bytes32 => bytes32[]) private existingStartConditions;
+    mapping(bytes32 => bytes32[]) existingStartConditions;
 
     // The current state id
     bytes32 private currentStateId;
@@ -35,20 +36,41 @@ contract StateMachine {
     ///@dev transitions the state machine into the state it should currently be in
     ///@dev by taking into account the current conditions and how many further transitions can occur 
     function conditionalTransitions() public {
-        bytes32[] storage existing = existingStartConditions[currentStateId];
-        for (uint256 i = 0; i < existing.length; i++) {
-            bytes32 nextId = existing[i];
-            for (uint256 j = 0; j < startConditions[currentStateId][nextId].length; j++) {
-                if (startConditions[currentStateId][nextId][j](currentStateId, nextId)) {
-                   goToState(nextId);
-                   conditionalTransitions();
+        // Store the initial state id to check for cycles
+        bytes32 initialStateId  = currentStateId;
+        // Should stop iterating when we go over all the possible automatic transitions and none is executed
+        bool stateChanged = true;
+        while (stateChanged) {
+            stateChanged = false;
+            // Store currentStateId in memory to decrease gas costs
+            bytes32 current = currentStateId;
+            bytes32[] storage existing = existingStartConditions[current];
+            for (uint256 i = 0; i < existing.length && !stateChanged; i++) {
+                bytes32 nextId = existing[i];
+                for (uint256 j = 0; j < startConditions[current][nextId].length; j++) {
+                    if (startConditions[current][nextId][j](current, nextId)) {
+                        goToState(nextId);
+                        stateChanged = true;
+                        break;
+                    }
                 }
+            }
+
+            // If a full cycle of transitions happened, go to the FALLBACK state
+            if (stateChanged && currentStateId == initialStateId) { 
+              goToState(FALLBACK);
+              break;
             }
         }
     }
 
     function getCurrentStateId() view public returns(bytes32) {
         return currentStateId;
+    }
+
+    function setInitialState(bytes32 _stateId) internal {
+        require(currentStateId == 0);
+        currentStateId = _stateId;
     }
 
     /// @dev Allow a function in the given state.
@@ -77,7 +99,8 @@ contract StateMachine {
     }
 
     ///@dev add a function returning a boolean as a start condition for a state
-    ///@param _stateId The ID of the state to add the condition for
+    ///@param _fromId The ID of the state to add the condition for
+    ///@param _toId The ID of the state to add the condition for
     ///@param _condition Start condition function - returns true if a start condition (for a given state ID) is met
     function addStartCondition(bytes32 _fromId, bytes32 _toId, function(bytes32, bytes32) internal returns(bool) _condition) internal {
         if (startConditions[_fromId][_toId].length == 0) {
@@ -100,5 +123,4 @@ contract StateMachine {
     function addCallback(bytes32 _fromId, bytes32 _toId, function() internal _callback) internal {
         transitionCallbacks[_fromId][_toId].push(_callback);
     }
-
 }

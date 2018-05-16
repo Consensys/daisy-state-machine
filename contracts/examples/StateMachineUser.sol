@@ -9,7 +9,6 @@ contract StateMachineUser is TimedStateMachine {
     bytes32 constant STATE2 = "state2";
     bytes32 constant STATE3 = "state3";
     bytes32 constant STATE4 = "state4";
-    bytes32[] states = [STATE1, STATE2, STATE3, STATE4];
 
     constructor() public {
         setupStates();
@@ -31,7 +30,7 @@ contract StateMachineUser is TimedStateMachine {
     }
 
     function setupStates() internal {
-        setStates(states);
+        setInitialState(STATE1);
 
         allowFunction(STATE1, this.foo.selector);
         allowFunction(STATE2, this.bar.selector);
@@ -41,10 +40,10 @@ contract StateMachineUser is TimedStateMachine {
         addCallback(STATE2, onState2);
         addCallback(STATE3, onState3);
 
-        setStateStartTime(STATE2, now + 2 weeks);
-        setStateStartTime(STATE3, now + 3 weeks);
+        setStartTime(STATE1, STATE2, now + 2 weeks);
+        setStartTime(STATE2, STATE3, now + 3 weeks);
 
-        addStartCondition(STATE4, shouldState4Start);
+        addStartCondition(STATE3, STATE4, shouldState4Start);
     }
 
     // Callback when entering each state
@@ -52,7 +51,7 @@ contract StateMachineUser is TimedStateMachine {
     function onState2() internal { /* Do something */ }
     function onState3() internal { /* Do something */ }
 
-    function shouldState4Start(bytes32) internal returns(bool) {
+    function shouldState4Start(bytes32, bytes32) internal returns(bool) {
         return true;
     }
 

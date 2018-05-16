@@ -9,9 +9,6 @@ contract StateMachineMock is StateMachine {
     bool public condition = false;
     bool public callbackCalled = false;
 
-    constructor() public { 
-    }
-
     function dummyFunction() public checkAllowed {
     }
 
@@ -25,6 +22,10 @@ contract StateMachineMock is StateMachine {
 
     function dummyCallback() internal {
         callbackCalled = true;
+    }
+
+    function setInitialStateHelper(bytes32 _stateId) public {
+        setInitialState(_stateId);
     }
 
     // Helper to test going to next state
@@ -47,11 +48,11 @@ contract StateMachineMock is StateMachine {
     }
 
     // Sets the dummy callback for a state
-    function setDummyCallback(bytes32 _fromId, bytes32 _toId) public {
+    function setDummyTransitionCallback(bytes32 _fromId, bytes32 _toId) public {
         addCallback(_fromId, _toId, dummyCallback);
     }
     
-    function setDummyCallback(bytes32 _stateId) public {
+    function setDummyStateCallback(bytes32 _stateId) public {
         addCallback(_stateId, dummyCallback);
     }
 
