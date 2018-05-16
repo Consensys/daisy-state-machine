@@ -11,14 +11,14 @@ contract('StateMachine', accounts => {
   const stateC = 'STATEC';
   const stateD = 'STATED';
 
-  let fallbackState;
+  const fallbackState = 'FALLBACK';
+  const notFallbackState = 'NOT_FALLBACK';
 
   let dummyFunctionSelector;
 
 
   beforeEach(async () => {
     stateMachine = await StateMachineMock.new();
-    fallbackState = await stateMachine.FALLBACK.call();
     dummyFunctionSelector = await stateMachine.dummyFunctionSelector.call();
     stateMachine.setInitialStateHelper(stateA);
   });
@@ -111,6 +111,21 @@ contract('StateMachine', accounts => {
     assert.equal(web3.toUtf8(currentState), stateC);
   });
 
+  it('should be possible to add more than one condition to the same transition', async () => {
+    let currentState = await stateMachine.getCurrentStateId.call();
+    assert.equal(web3.toUtf8(currentState), stateA);
+
+    // This condition will return true
+    await stateMachine.setDummyCondition(stateA, stateB);
+    // This condition will return false
+    await stateMachine.setDummyVariableCondition(stateA, stateB);
+
+    await stateMachine.conditionalTransitions();
+
+    currentState = await stateMachine.getCurrentStateId.call();
+    assert.equal(web3.toUtf8(currentState), stateB);
+  });
+
   it('should automatically perform multiple transitions if there exist consecutive transitions with conditions that evaluate to true', async () => {
     let currentState;
     currentState = await stateMachine.getCurrentStateId.call();
@@ -130,7 +145,9 @@ contract('StateMachine', accounts => {
     assert.equal(web3.toUtf8(currentState), stateD);
   });
 
-  it('should go to FALLBACK state if a cycle of automatic transitions has occurred', async () => {
+  it('should go to FALLBACK state if it was set and a cycle of automatic transitions has occurs', async () => {
+    stateMachine.setFallbackStateHelper(fallbackState);
+
     let currentState;
     currentState = await stateMachine.getCurrentStateId.call();
     assert.equal(web3.toUtf8(currentState), stateA);
@@ -147,7 +164,12 @@ contract('StateMachine', accounts => {
     await stateMachine.conditionalTransitions();
     
     currentState = await stateMachine.getCurrentStateId.call();
-    assert.equal(currentState, fallbackState);   
+    assert.equal(web3.toUtf8(currentState), fallbackState);   
+  });
+
+  it('should not be possible to set the fallback state more than once', async () => {
+    stateMachine.setFallbackStateHelper(fallbackState);
+    await expectThrow(stateMachine.setFallbackStateHelper(notFallbackState));
   });
 
   it('should be possible to set a callback for a state', async () => {

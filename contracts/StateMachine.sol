@@ -2,7 +2,7 @@ pragma solidity 0.4.23;
 
 
 contract StateMachine {
-    bytes32 public constant FALLBACK = keccak256("fallback");
+    bytes32 private fallbackState;
 
     // state id => (function selector => is allowed)
     mapping(bytes32 => mapping(bytes4 => bool)) allowedFunctions;
@@ -57,8 +57,8 @@ contract StateMachine {
             }
 
             // If a full cycle of transitions happened, go to the FALLBACK state
-            if (stateChanged && currentStateId == initialStateId) { 
-              goToState(FALLBACK);
+            if (fallbackState != 0 && stateChanged && currentStateId == initialStateId) { 
+              goToState(fallbackState);
               break;
             }
         }
@@ -71,6 +71,11 @@ contract StateMachine {
     function setInitialState(bytes32 _stateId) internal {
         require(currentStateId == 0);
         currentStateId = _stateId;
+    }
+
+    function setFallbackState(bytes32 _stateId) internal {
+        require(fallbackState == 0);
+        fallbackState = _stateId;
     }
 
     /// @dev Allow a function in the given state.
