@@ -3,13 +3,13 @@ require('babel-polyfill');
 
 const getPrivateKey = require('./scripts/get-private-key');
 
-const HDWalletProvider = require('./utils/truffle-provider');
+const WalletProvider = require('./utils/truffle-provider');
 
-const provider = (url) => {
+const provider = url => {
   const address = process.env.ADDRESS;
   const password = process.env.PASSWORD;
   const privateKey = address && password ? getPrivateKey(address, password) : null;
-  return privateKey ? () => new HDWalletProvider(privateKey, url) : null;
+  return () => new WalletProvider(privateKey, url);
 };
 
 module.exports = {
