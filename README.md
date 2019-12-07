@@ -34,6 +34,13 @@ Run `yarn test` to run all the tests.
 
 Run `yarn coverage` to run tests and get code coverage.
 
+## Contributors
+
++ [@vdrg](https://github.com/vdrg)
++ [@alicevhenshaw](https://github.com/alicevhenshaw)
++ [@fosgate29](https://github.com/fosgate29)
++ [@thekscar](https://github.com/thekscar)
+
 ## License
 
 MIT
